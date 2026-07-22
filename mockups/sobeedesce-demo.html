@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CardScore · Sobe e Desce</title>
+<style>
+  :root{
+    --bg:#0F1714; --surface:#16211C; --surfaceAlt:#1E2D26; --border:#2A3D34;
+    --text:#EAF2EC; --textDim:#8AA396; --gold:#D4AF6A; --goldDim:#9A8049;
+    --pos:#5FBF7E; --neg:#E07A6B; --danger:#C75B4A; --copas:#D46A8A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+  #app{max-width:480px; margin:0 auto; min-height:100vh; padding:26px 20px 70px;}
+  .eyebrow{color:var(--goldDim); font-size:12px; font-weight:700; letter-spacing:2px;
+    text-transform:uppercase;}
+  h1{font-size:34px; font-weight:800; margin:4px 0 6px;}
+  .sub{color:var(--textDim); font-size:15px; margin:0 0 20px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:18px;
+    padding:15px; margin-bottom:10px;}
+  .btn{display:block; width:100%; border:none; border-radius:14px; padding:15px;
+    font-size:16px; font-weight:700; cursor:pointer; margin-top:8px;}
+  .btn-primary{background:var(--gold); color:#0F1714;}
+  .btn-ghost{background:transparent; border:1px solid var(--border); color:var(--text);}
+  .btn-danger{background:transparent; border:1px solid var(--danger); color:var(--text);}
+  .btn:disabled{opacity:.35;}
+  .back{color:var(--gold); font-size:16px; background:none; border:none; padding:0;
+    margin-bottom:14px; cursor:pointer;}
+  .prow{display:flex; align-items:center; margin-bottom:10px; gap:10px;}
+  .pnum{width:32px; height:32px; border-radius:16px; background:var(--surfaceAlt);
+    display:flex; align-items:center; justify-content:center; color:var(--gold);
+    font-weight:700; flex-shrink:0;}
+  .pinput{flex:1; background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:12px 16px; color:var(--text); font-size:16px;}
+  .premove{color:var(--danger); font-size:28px; background:none; border:none;
+    cursor:pointer; padding:0 6px;}
+  .addrow{color:var(--gold); font-size:15px; font-weight:600; background:none;
+    border:none; padding:10px 0; cursor:pointer;}
+  .optcard{display:flex; align-items:center; justify-content:space-between;}
+  .optinput{background:var(--surfaceAlt); border:none; border-radius:8px;
+    padding:8px 14px; color:var(--gold); font-size:18px; font-weight:700;
+    width:90px; text-align:center;}
+  /* step */
+  .stepdot{display:flex; gap:6px; margin-bottom:14px;}
+  .stepdot span{height:4px; flex:1; border-radius:2px; background:var(--border);}
+  .stepdot span.on{background:var(--gold);}
+  .qlabel{font-size:19px; font-weight:700; margin:2px 0 4px;}
+  .qhelp{color:var(--textDim); font-size:13px; margin-bottom:14px;}
+  .chip{display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px; margin-bottom:10px; cursor:pointer; font-size:17px; font-weight:600;}
+  .chip.on{border-color:var(--gold); background:var(--surfaceAlt); color:var(--gold);}
+  .chip.copas.on{border-color:var(--copas); color:var(--copas);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .grid2 .chip{margin-bottom:0;}
+  /* jogador toggle ir/passar */
+  .jrow{display:flex; align-items:center; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px; padding:12px 14px;
+    margin-bottom:9px; gap:12px;}
+  .jrow.chooser{border-color:var(--goldDim);}
+  .jname{font-size:16px; font-weight:600; flex:1;}
+  .jpts{font-size:12px; color:var(--textDim);}
+  .seg{display:flex; background:var(--bg); border-radius:10px; overflow:hidden;
+    border:1px solid var(--border);}
+  .seg button{border:none; background:none; color:var(--textDim); font-size:13px;
+    font-weight:700; padding:8px 12px; cursor:pointer;}
+  .seg button.go{color:var(--pos);} .seg button.go.on{background:var(--pos); color:#0F1714;}
+  .seg button.pass.on{background:var(--neg); color:#fff;}
+  .lock{font-size:11px; color:var(--gold); font-weight:700;}
+  /* vazas */
+  .vrow{display:flex; align-items:center; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px; padding:12px 14px;
+    margin-bottom:9px; gap:10px;}
+  .vname{font-size:16px; font-weight:600; flex:1;}
+  .step{width:36px; height:36px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surfaceAlt); color:var(--text); font-size:22px; font-weight:700;
+    cursor:pointer;}
+  .vval{width:34px; text-align:center; font-size:20px; font-weight:800; color:var(--gold);}
+  .vsum{text-align:center; color:var(--textDim); font-size:14px; margin:6px 0 0;}
+  .vsum.bad{color:var(--neg);}
+  .alert{background:#241A18; border:1px solid var(--neg); border-radius:12px;
+    padding:12px 14px; margin-bottom:10px; font-size:14px; color:#FADAD3;}
+  .alert b{color:var(--neg);}
+  /* game standings */
+  .srow{display:flex; align-items:center; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px; padding:13px 15px; margin-bottom:9px;}
+  .srow.win{border-color:var(--gold); background:var(--surfaceAlt);}
+  .srank{width:30px; font-weight:800; color:var(--textDim);}
+  .sname{flex:1; font-size:17px; font-weight:600;}
+  .spts{font-size:22px; font-weight:800; color:var(--gold);}
+  .delta{font-size:13px; font-weight:700; margin-left:8px;}
+  .mt{margin-top:14px;} .mt-lg{margin-top:22px;}
+  .demoTag{position:fixed; top:8px; right:8px; background:var(--gold); color:#0F1714;
+    font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:1px; z-index:99;}
+  .mult{display:inline-block; padding:3px 10px; border-radius:20px; font-size:13px;
+    font-weight:800; background:var(--surfaceAlt); color:var(--gold);}
+  .mult.copas{color:var(--copas);}
+  .footer{color:var(--textDim); font-size:13px; text-align:center; margin-top:26px;}
+  /* barra fixa de pontuacoes durante a ronda */
+  .scorebar{position:fixed; left:0; right:0; bottom:0; z-index:80;
+    background:rgba(15,23,20,.96); border-top:1px solid var(--border);
+    backdrop-filter:blur(8px); padding:9px 12px calc(9px + env(safe-area-inset-bottom));}
+  .scorebar-inner{max-width:480px; margin:0 auto;}
+  .scorebar-title{font-size:10px; font-weight:700; letter-spacing:1.5px;
+    color:var(--goldDim); text-transform:uppercase; margin-bottom:6px; text-align:center;}
+  .scorebar-row{display:flex; gap:7px; overflow-x:auto; padding-bottom:2px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  .scorebar-row::-webkit-scrollbar{display:none;}
+  .pchip{flex:0 0 auto; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:7px 12px; text-align:center; min-width:58px;}
+  .pchip.lead{border-color:var(--gold); background:var(--surfaceAlt);}
+  .pchip.danger{border-color:var(--neg);}
+  .pchip .pn{font-size:11px; color:var(--textDim); font-weight:600; white-space:nowrap;
+    max-width:70px; overflow:hidden; text-overflow:ellipsis;}
+  .pchip .pv{font-size:20px; font-weight:800; color:var(--gold); line-height:1.1;}
+  .pchip.danger .pv{color:var(--neg);}
+  .pchip .pd{font-size:10px; font-weight:700;}
+  /* dar espaco extra no fundo do #app quando a barra esta visivel */
+  .has-scorebar{padding-bottom:110px !important;}
+</style>
+</head>
+<body>
+<div class="demoTag">DEMO</div>
+<div id="app"></div>
+<script>
+const C={pos:'#5FBF7E',neg:'#E07A6B',dim:'#8AA396',gold:'#D4AF6A'};
+
+let S={
+  screen:'home',
+  players:[{id:1,name:''},{id:2,name:''},{id:3,name:''},{id:4,name:''}],
+  valuePerPoint:0.20,
+  scores:[],          // {id,name,pts,passStreak}
+  chooserIdx:0,       // indice do jogador a escolher
+  round:0,
+  // input da ronda atual:
+  step:0,
+  r:null,
+  winnerId:null
+};
+let pid=5;
+
+function euro(n){const s=n>0?'+':'';return s+n.toFixed(2)+' €';}
+const SUITS=[
+  {k:'paus',label:'♣ Paus',copas:false,note:'todos vão'},
+  {k:'espadas',label:'♠ Espadas',copas:false},
+  {k:'ouros',label:'♦ Ouros',copas:false},
+  {k:'copas',label:'♥ Copas',copas:true,note:'×2'}
+];
+
+function mult(r){ if(r.dark) return 3; if(r.suit==='copas') return 2; return 1; }
+
+const STEP_SCREENS=['chooseStep','goStep','tricksStep'];
+
+function render(){
+  const a=document.getElementById('app');
+  const map={home,setup,chooseStep,goStep,tricksStep,game,results};
+  const showBar = STEP_SCREENS.includes(S.screen);
+  a.className = showBar ? 'has-scorebar' : '';
+  a.innerHTML = (map[S.screen] ? map[S.screen]() : home());
+  // barra fixa de pontuacoes fora do #app para nao rolar com o conteudo
+  let bar=document.getElementById('scorebar');
+  if(showBar){
+    if(!bar){ bar=document.createElement('div'); bar.id='scorebar'; document.body.appendChild(bar); }
+    bar.innerHTML = scorebar();
+  } else if(bar){ bar.remove(); }
+}
+
+function scorebar(){
+  const sorted=[...S.scores].sort((a,b)=>a.pts-b.pts);
+  const lead=sorted[0].pts;
+  const chips=sorted.map(p=>{
+    const isLead=p.pts===lead;
+    const low=p.pts<=5;
+    const d=S.lastDeltas?S.lastDeltas[p.id]:null;
+    const dtxt=(d!==null&&d!==undefined&&d!==0)
+      ?`<div class="pd" style="color:${d<0?C.pos:C.neg}">${d<0?d:'+'+d}</div>`:'<div class="pd">&nbsp;</div>';
+    return `<div class="pchip ${isLead?'lead':''} ${low?'danger':''}">
+      <div class="pn">${p.name}${low?' ⚠':''}</div>
+      <div class="pv">${p.pts}</div>
+      ${dtxt}
+    </div>`;
+  }).join('');
+  return `<div class="scorebar">
+    <div class="scorebar-inner">
+      <div class="scorebar-title">Pontuações · ganha quem chega a 0</div>
+      <div class="scorebar-row">${chips}</div>
+    </div>
+  </div>`;
+}
+
+function home(){
+  return `
+    <div class="eyebrow">Contas de jogo</div>
+    <h1>CardScore</h1>
+    <p class="sub">Escolhe o jogo. As contas fazem-se sozinhas.</p>
+    <div class="eyebrow" style="margin-bottom:10px">Jogos</div>
+    <div class="card" style="display:flex;align-items:center" onclick="go('setup')">
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:700">Sobe e Desce</div>
+        <div style="color:var(--textDim);font-size:14px;margin-top:3px">Vazas, trunfos e multiplicadores. Tudo automático.</div>
+        <div style="color:var(--goldDim);font-size:12px;margin-top:6px;font-weight:600">4–5 jogadores</div>
+      </div>
+      <div style="color:var(--gold);font-size:30px">›</div>
+    </div>
+    <div class="card" style="opacity:.55;display:flex;align-items:center">
+      <div style="flex:1"><div style="font-size:20px;font-weight:700">Fodinha</div>
+      <div style="color:var(--textDim);font-size:14px;margin-top:3px">Já disponível na app</div></div>
+    </div>
+    <p class="footer">Demo do Sobe e Desce.</p>`;
+}
+
+function setup(){
+  const rows=S.players.map((p,i)=>`
+    <div class="prow">
+      <div class="pnum">${i+1}</div>
+      <input class="pinput" value="${esc(p.name)}" placeholder="Jogador ${i+1}"
+        oninput="setName(${p.id},this.value)">
+      ${S.players.length>4?`<button class="premove" onclick="removeP(${p.id})">×</button>`:''}
+    </div>`).join('');
+  return `
+    <button class="back" onclick="go('home')">‹ Voltar</button>
+    <div class="eyebrow">Configurar</div>
+    <h1 style="font-size:30px">Sobe e Desce</h1>
+    <div class="eyebrow" style="margin-bottom:10px">Jogadores (${S.players.length})</div>
+    ${rows}
+    ${S.players.length<5?`<button class="addrow" onclick="addP()">+ Adicionar 5º jogador</button>`:''}
+    <div class="eyebrow mt-lg" style="margin-bottom:10px">Aposta</div>
+    <div class="card optcard">
+      <span>Valor por ponto (€)</span>
+      <input class="optinput" type="number" step="0.05" value="${S.valuePerPoint}"
+        oninput="S.valuePerPoint=Number(this.value)||0.20">
+    </div>
+    <div class="card" style="color:var(--textDim);font-size:13px;line-height:1.5">
+      Todos começam com <b style="color:var(--text)">20 pontos</b>. Ganha quem chegar a 0 primeiro.
+    </div>
+    <button class="btn btn-primary mt-lg" onclick="startGame()">Começar jogo</button>`;
+}
+
+function startGame(){
+  S.scores=S.players.map((p,i)=>({
+    id:p.id, name:(p.name||'').trim()||('Jogador '+(i+1)), pts:20, passStreak:0
+  }));
+  S.chooserIdx=0; S.round=0; S.winnerId=null;
+  newRound();
+  S.screen='chooseStep'; render();
+}
+
+function newRound(){
+  S.step=0;
+  S.r={
+    chooserId:S.scores[S.chooserIdx].id,
+    mode:null, suit:null, dark:false,
+    went:{}, tricks:{}
+  };
+  S.scores.forEach(p=>{ S.r.went[p.id]=null; S.r.tricks[p.id]=0; });
+}
+
+function chooserName(){ return S.scores.find(p=>p.id===S.r.chooserId).name; }
+
+// STEP 1: escolher ou virar + nipe/modo
+function chooseStep(){
+  const r=S.r;
+  const canContinue = r.mode && (r.mode==='virou' ? r.suit : (r.dark || r.suit));
+  return `
+    <button class="back" onclick="go('game')">‹ Ver pontuações</button>
+    ${stepDots(0)}
+    <div class="eyebrow">Ronda ${S.round+1}</div>
+    <div class="qlabel">${chooserName()} está a escolher</div>
+    <div class="qhelp">Escolhe trunfo (arrisca mais) ou vira (arrisca menos).</div>
+    <div class="grid2" style="margin-bottom:16px">
+      <div class="chip ${r.mode==='escolheu'?'on':''}" onclick="setMode('escolheu')">Escolher</div>
+      <div class="chip ${r.mode==='virou'?'on':''}" onclick="setMode('virou')">Virar</div>
+    </div>
+    ${r.mode ? nipeBlock() : ''}
+    <button class="btn btn-primary mt" ${canContinue?'':'disabled'} onclick="toGoStep()">Continuar</button>`;
+}
+
+function nipeBlock(){
+  const r=S.r;
+  const darkOpt = r.mode==='escolheu' ? `
+    <div class="chip copas ${r.dark?'on':''}" onclick="toggleDark()" style="margin-top:10px">
+      ♥ Copas no escuro (×3)
+    </div>` : '';
+  if(r.dark){
+    return `<div class="qhelp">Copas no escuro: pontuação a triplicar.</div>${darkOpt}`;
+  }
+  const label = r.mode==='virou' ? 'Que carta saiu ao virar?' : 'Que trunfo escolheu?';
+  return `
+    <div class="qhelp">${label}</div>
+    ${SUITS.map(s=>`
+      <div class="chip ${s.copas?'copas':''} ${r.suit===s.k?'on':''}" onclick="setSuit('${s.k}')">
+        ${s.label}${s.note?` · ${s.note}`:''}
+      </div>`).join('')}
+    ${darkOpt}`;
+}
+
+function setMode(m){ S.r.mode=m; if(m==='virou') S.r.dark=false; render(); }
+function setSuit(k){ S.r.suit=k; S.r.dark=false; render(); }
+function toggleDark(){ S.r.dark=!S.r.dark; if(S.r.dark) S.r.suit='copas'; render(); }
+
+// STEP 2: quem vai / quem passa, com obrigatoriedades
+function toGoStep(){ S.step=1; S.screen='goStep'; render(); }
+function goStep(){
+  const r=S.r;
+  const alerts=[];
+  const rows=S.scores.map(p=>{
+    const forced = forcedReason(p);
+    if(forced && r.went[p.id]===null) r.went[p.id]=true; // auto-vai
+    const isChooser=p.id===r.chooserId;
+    const went=r.went[p.id];
+    let seg;
+    if(forced){
+      seg=`<span class="lock">OBRIGADO A IR</span>`;
+    } else {
+      seg=`<div class="seg">
+        <button class="go ${went===true?'on':''}" onclick="setWent(${p.id},true)">Vai</button>
+        <button class="pass ${went===false?'on':''}" onclick="setWent(${p.id},false)">Passa</button>
+      </div>`;
+    }
+    if(forced) alerts.push(`<b>${p.name}</b> ${forced}`);
+    return `
+      <div class="jrow ${isChooser?'chooser':''}">
+        <div style="flex:1">
+          <div class="jname">${p.name}${isChooser?' 👑':''}</div>
+          <div class="jpts">${p.pts} pts${p.passStreak>0?` · passou ${p.passStreak}×`:''}</div>
+        </div>
+        ${seg}
+      </div>`;
+  }).join('');
+  const decided=S.scores.every(p=>r.went[p.id]!==null);
+  return `
+    <button class="back" onclick="backToChoose()">‹ Voltar</button>
+    ${stepDots(1)}
+    <div class="eyebrow">Ronda ${S.round+1} · ${modeSummary()}</div>
+    <div class="qlabel">Quem vai a jogo?</div>
+    <div class="qhelp">Os obrigados já vão marcados. Toca para os restantes.</div>
+    ${alerts.map(a=>`<div class="alert">${a}</div>`).join('')}
+    ${rows}
+    <button class="btn btn-primary mt" ${decided?'':'disabled'} onclick="toTricks()">Continuar</button>`;
+}
+
+function forcedReason(p){
+  const r=S.r;
+  if(p.id===r.chooserId) return 'está a escolher, vai sempre.';
+  if(r.suit==='paus' && !r.dark) return 'trunfo paus, todos vão.';
+  if(p.pts<=5) return 'tem 5 pontos ou menos, obrigado a ir.';
+  if(p.passStreak>=2) return 'passou 2× seguidas, obrigado a ir agora.';
+  return null;
+}
+function setWent(id,v){ S.r.went[id]=v; render(); }
+function backToChoose(){ S.step=0; S.screen='chooseStep'; render(); }
+
+// STEP 3: vazas
+function toTricks(){
+  // garantir went preenchido; quem passou fica sem vazas
+  S.step=2; S.screen='tricksStep'; render();
+}
+function tricksStep(){
+  const r=S.r;
+  const goers=S.scores.filter(p=>r.went[p.id]===true);
+  const sum=goers.reduce((a,p)=>a+(r.tricks[p.id]||0),0);
+  const ok=sum===5;
+  const rows=goers.map(p=>`
+    <div class="vrow">
+      <div class="vname">${p.name}</div>
+      <button class="step" onclick="bump(${p.id},-1)">−</button>
+      <div class="vval">${r.tricks[p.id]||0}</div>
+      <button class="step" onclick="bump(${p.id},1)">+</button>
+    </div>`).join('');
+  return `
+    <button class="back" onclick="backToGo()">‹ Voltar</button>
+    ${stepDots(2)}
+    <div class="eyebrow">Ronda ${S.round+1} · ${modeSummary()}</div>
+    <div class="qlabel">Vazas de cada um</div>
+    <div class="qhelp">Só quem foi a jogo. Total tem de dar 5.</div>
+    ${rows}
+    <div class="vsum ${ok?'':'bad'}">Total: ${sum} / 5</div>
+    <button class="btn btn-primary mt" ${ok?'':'disabled'} onclick="applyRound()">Registar ronda</button>`;
+}
+function bump(id,d){
+  const v=(S.r.tricks[id]||0)+d;
+  if(v<0||v>5) return;
+  S.r.tricks[id]=v; render();
+}
+function backToGo(){ S.step=1; S.screen='goStep'; render(); }
+
+function modeSummary(){
+  const r=S.r; const m=mult(r);
+  const suitLabel = r.dark ? '♥ escuro' : (SUITS.find(s=>s.k===r.suit)||{}).label||'';
+  const cls = (r.suit==='copas'||r.dark)?'copas':'';
+  return `<span class="mult ${cls}">${suitLabel} ×${m}</span> ${r.mode==='virou'?'virou':'escolheu'}`;
+}
+
+// aplicar pontuacao (segue a spec validada)
+function applyRound(){
+  const r=S.r; const M=mult(r);
+  const deltas={};
+  S.scores.forEach(p=>{
+    if(r.went[p.id]!==true){ deltas[p.id]=0; return; }
+    const t=r.tricks[p.id]||0;
+    if(t>0){ deltas[p.id]=-(t*M); return; }
+    // falhou
+    if(p.id===r.chooserId){
+      if(r.dark) deltas[p.id]=15;
+      else if(r.mode==='escolheu') deltas[p.id]=(r.suit==='copas')?20:10;
+      else deltas[p.id]=(r.suit==='copas')?10:5;
+    } else {
+      deltas[p.id]=5*M;
+    }
+  });
+  // aplicar + tratar passStreak
+  S.scores.forEach(p=>{
+    p.pts += deltas[p.id];
+    if(r.went[p.id]===false) p.passStreak+=1; else p.passStreak=0;
+  });
+  S.lastDeltas=deltas;
+  // fim de jogo?
+  const zeros=S.scores.filter(p=>p.pts<=0);
+  if(zeros.length>0){
+    // vencedor: primeiro a chegar (na demo, o de menor pontuacao; empate real
+    // resolve-se na app pela ordem da vaza). Aqui pegamos o minimo.
+    zeros.sort((a,b)=>a.pts-b.pts);
+    S.winnerId=zeros[0].id;
+    S.screen='results'; render(); return;
+  }
+  // proxima ronda
+  S.round+=1;
+  S.chooserIdx=(S.chooserIdx+1)%S.scores.length;
+  newRound();
+  S.screen='chooseStep'; render();
+}
+
+function game(){
+  const sorted=[...S.scores].sort((a,b)=>a.pts-b.pts);
+  const rows=sorted.map((p,i)=>{
+    const d=S.lastDeltas?S.lastDeltas[p.id]:null;
+    const dtxt=(d!==null&&d!==undefined&&d!==0)
+      ?`<span class="delta" style="color:${d<0?C.pos:C.neg}">${d<0?d:'+'+d}</span>`:'';
+    return `<div class="srow ${i===0?'win':''}">
+      <div class="srank">${i+1}</div>
+      <div class="sname">${p.name}</div>
+      <div class="spts">${p.pts}${dtxt}</div>
+    </div>`;
+  }).join('');
+  return `
+    <button class="back" onclick="S.screen='chooseStep';render()">‹ Continuar ronda</button>
+    <div class="eyebrow">Ronda ${S.round+1} · em curso</div>
+    <h1 style="font-size:28px">Pontuações</h1>
+    <p class="sub">Ganha quem chegar a 0. Delta = a verde tira, a vermelho leva.</p>
+    ${rows}`;
+}
+
+function results(){
+  const win=S.scores.find(p=>p.id===S.winnerId);
+  const others=S.scores.filter(p=>p.id!==S.winnerId);
+  const rows=[win,...others.sort((a,b)=>a.pts-b.pts)].map((p,i)=>{
+    const isWin=p.id===S.winnerId;
+    const owes = (!isWin && p.pts>0) ? p.pts*S.valuePerPoint : 0;
+    const zeroNoWin = (!isWin && p.pts<=0);
+    const money = isWin
+      ? `recebe ${(others.reduce((a,o)=>a+(o.pts>0?o.pts:0),0)*S.valuePerPoint).toFixed(2)} €`
+      : zeroNoWin ? 'não paga (chegou a 0)' : `paga ${owes.toFixed(2)} €`;
+    return `<div class="srow ${isWin?'win':''}">
+      <div class="srank">${isWin?'★':i+1}</div>
+      <div style="flex:1">
+        <div class="sname">${p.name}</div>
+        <div style="font-size:13px;color:var(--textDim);margin-top:2px">${p.pts} pts · ${money}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="eyebrow">Fim de jogo</div>
+    <h1>Contas finais</h1>
+    <p class="sub">${win.name} chegou a 0. Valor: ${S.valuePerPoint.toFixed(2)} €/ponto.</p>
+    ${rows}
+    <button class="btn btn-primary mt-lg" onclick="go('setup')">Novo jogo</button>
+    <button class="btn btn-ghost" onclick="go('home')">Menu principal</button>`;
+}
+
+function stepDots(active){
+  return `<div class="stepdot">
+    ${[0,1,2].map(i=>`<span class="${i<=active?'on':''}"></span>`).join('')}
+  </div>`;
+}
+
+// util
+function go(s){
+  if(s==='setup'){ S.players=[{id:1,name:''},{id:2,name:''},{id:3,name:''},{id:4,name:''}];
+    S.valuePerPoint=0.20; pid=5; S.lastDeltas=null; }
+  S.screen=s; render();
+}
+function setName(id,v){ const p=S.players.find(x=>x.id===id); if(p)p.name=v; }
+function addP(){ if(S.players.length<5){ S.players.push({id:pid++,name:''}); render(); } }
+function removeP(id){ if(S.players.length>4){ S.players=S.players.filter(p=>p.id!==id); render(); } }
+function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+render();
+</script>
+</body>
+</html>

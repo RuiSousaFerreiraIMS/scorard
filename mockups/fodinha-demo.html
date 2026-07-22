@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CardScore · Fodinha</title>
+<style>
+  :root{
+    --bg:#0F1714; --surface:#16211C; --surfaceAlt:#1E2D26; --border:#2A3D34;
+    --text:#EAF2EC; --textDim:#8AA396; --gold:#D4AF6A; --goldDim:#9A8049;
+    --pos:#5FBF7E; --neg:#E07A6B; --danger:#C75B4A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+  #app{max-width:480px; margin:0 auto; min-height:100vh; padding:28px 22px 60px;}
+  .eyebrow{color:var(--goldDim); font-size:12px; font-weight:700; letter-spacing:2px;
+    text-transform:uppercase;}
+  h1{font-size:38px; font-weight:800; margin:4px 0 6px;}
+  .sub{color:var(--textDim); font-size:15px; margin:0 0 22px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    padding:16px; margin-bottom:10px;}
+  .btn{display:block; width:100%; border:none; border-radius:14px; padding:15px;
+    font-size:16px; font-weight:700; letter-spacing:.3px; cursor:pointer; margin-top:8px;}
+  .btn-primary{background:var(--gold); color:#0F1714;}
+  .btn-ghost{background:transparent; border:1px solid var(--border); color:var(--text);}
+  .btn-danger{background:transparent; border:1px solid var(--danger); color:var(--text);}
+  .back{color:var(--gold); font-size:16px; background:none; border:none; padding:0;
+    margin-bottom:14px; cursor:pointer;}
+  /* setup */
+  .prow{display:flex; align-items:center; margin-bottom:10px; gap:10px;}
+  .pnum{width:32px; height:32px; border-radius:16px; background:var(--surfaceAlt);
+    display:flex; align-items:center; justify-content:center; color:var(--gold);
+    font-weight:700; flex-shrink:0;}
+  .pinput{flex:1; background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:12px 16px; color:var(--text); font-size:16px;}
+  .premove{color:var(--danger); font-size:28px; background:none; border:none;
+    cursor:pointer; padding:0 6px;}
+  .addrow{color:var(--gold); font-size:15px; font-weight:600; background:none;
+    border:none; padding:10px 0; cursor:pointer;}
+  .optcard{display:flex; align-items:center; justify-content:space-between;}
+  .optlabel{font-size:15px;}
+  .optinput{background:var(--surfaceAlt); border:none; border-radius:8px;
+    padding:8px 14px; color:var(--gold); font-size:18px; font-weight:700;
+    width:80px; text-align:center;}
+  /* game */
+  .roundcard{background:var(--surfaceAlt); border-color:var(--goldDim);
+    text-align:center;}
+  .roundval{color:var(--gold); font-size:44px; font-weight:800; margin:4px 0;}
+  .roundhelp{color:var(--textDim); font-size:14px;}
+  .hint{color:var(--textDim); font-size:13px; margin:4px 0 10px;}
+  .gprow{display:flex; align-items:center; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px; padding:14px 16px;
+    margin-bottom:10px; cursor:pointer;}
+  .gprow.loser{border-color:var(--neg); background:#241A18;}
+  .cbox{width:26px; height:26px; border-radius:7px; border:2px solid var(--border);
+    margin-right:14px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; font-size:22px; font-weight:800; color:#fff; line-height:1;}
+  .cbox.on{border-color:var(--neg); background:var(--neg);}
+  .gpname{font-size:17px; font-weight:600; flex:1;}
+  .gpmoney{font-size:16px; font-weight:700;}
+  .mt{margin-top:16px;} .mt-lg{margin-top:24px;}
+  /* hist */
+  .hrow{display:flex; align-items:center; padding:9px 0;
+    border-bottom:1px solid var(--border); font-size:14px;}
+  .hround{color:var(--gold); font-weight:700; width:40px;}
+  .hdetail{color:var(--textDim); flex:1;}
+  /* results */
+  .rrow{display:flex; align-items:center;}
+  .rrow.top{border-color:var(--gold); background:var(--surfaceAlt);}
+  .rank{font-size:20px; font-weight:800; width:36px; color:var(--textDim);}
+  .rank.top{color:var(--gold);}
+  .rname{font-size:18px; font-weight:600; flex:1;}
+  .rmoney{font-size:18px; font-weight:800;}
+  .demoTag{position:fixed; top:8px; right:8px; background:var(--gold); color:#0F1714;
+    font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:1px;
+    z-index:99;}
+  .footer{color:var(--textDim); font-size:13px; text-align:center; margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="demoTag">DEMO</div>
+<div id="app"></div>
+
+<script>
+const C = {
+  pos:'#5FBF7E', neg:'#E07A6B', dim:'#8AA396'
+};
+
+let S = {
+  screen:'home',
+  players:[{id:1,name:''},{id:2,name:''},{id:3,name:''}],
+  baseValue:1, increment:1,
+  currentValue:1, roundIndex:0,
+  balances:[], history:[], selected:[]
+};
+let pid = 4;
+
+function euro(n){ const s=n>0?'+':''; return s+n.toFixed(2)+' €'; }
+function val(n){ return Number(n).toFixed(2)+' €'; }
+const CARDS=[1,2,3,4,5,4,3,2,1];
+function cardsFor(i){ return CARDS[i%CARDS.length]; }
+
+function render(){
+  const a = document.getElementById('app');
+  if(S.screen==='home') a.innerHTML = home();
+  else if(S.screen==='setup') a.innerHTML = setup();
+  else if(S.screen==='game') a.innerHTML = game();
+  else if(S.screen==='results') a.innerHTML = results();
+}
+
+function home(){
+  return `
+    <div class="eyebrow">Contas de jogo</div>
+    <h1>CardScore</h1>
+    <p class="sub">Escolhe o jogo. As contas fazem-se sozinhas.</p>
+    <div class="eyebrow" style="margin-bottom:10px">Jogos</div>
+    <div class="card" style="display:flex;align-items:center" onclick="goSetup()">
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:700">Fodinha</div>
+        <div style="color:var(--textDim);font-size:14px;margin-top:3px">Apostas por ronda, contas automáticas.</div>
+        <div style="color:var(--goldDim);font-size:12px;margin-top:6px;font-weight:600">2–20 jogadores</div>
+      </div>
+      <div style="color:var(--gold);font-size:30px">›</div>
+    </div>
+    <div class="card" style="opacity:.5;display:flex;align-items:center">
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:700">Sueca</div>
+        <div style="color:var(--textDim);font-size:14px;margin-top:3px">Em breve</div>
+      </div>
+    </div>
+    <div class="card" style="opacity:.5;display:flex;align-items:center">
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:700">Hearts</div>
+        <div style="color:var(--textDim);font-size:14px;margin-top:3px">Em breve</div>
+      </div>
+    </div>
+    <p class="footer">Mais jogos em breve.</p>
+  `;
+}
+
+function setup(){
+  const rows = S.players.map((p,i)=>`
+    <div class="prow">
+      <div class="pnum">${i+1}</div>
+      <input class="pinput" value="${escapeHtml(p.name)}" placeholder="Jogador ${i+1}"
+        oninput="setName(${p.id}, this.value)">
+      ${S.players.length>2?`<button class="premove" onclick="removeP(${p.id})">×</button>`:''}
+    </div>`).join('');
+  return `
+    <button class="back" onclick="go('home')">‹ Voltar</button>
+    <div class="eyebrow">Configurar</div>
+    <h1 style="font-size:32px">Fodinha</h1>
+    <div class="eyebrow" style="margin-bottom:10px">Jogadores (${S.players.length})</div>
+    ${rows}
+    ${S.players.length<20?`<button class="addrow" onclick="addP()">+ Adicionar jogador</button>`:''}
+    <div class="eyebrow mt-lg" style="margin-bottom:10px">Opções</div>
+    <div class="card optcard">
+      <span class="optlabel">Valor da ronda (€)</span>
+      <input class="optinput" type="number" value="${S.baseValue}" oninput="S.baseValue=Number(this.value)||1">
+    </div>
+    <div class="card optcard">
+      <span class="optlabel">Aumento por ronda perfeita (€)</span>
+      <input class="optinput" type="number" value="${S.increment}" oninput="S.increment=Number(this.value)||1">
+    </div>
+    <button class="btn btn-primary mt-lg" onclick="startGame()">Começar jogo</button>
+  `;
+}
+
+function game(){
+  const cards = cardsFor(S.roundIndex);
+  const perfect = S.selected.length===0;
+  const sorted = [...S.balances].sort((a,b)=>a.name.localeCompare(b.name));
+  const rows = sorted.map(p=>{
+    const isL = S.selected.includes(p.id);
+    const col = p.money>0?C.pos : p.money<0?C.neg : C.dim;
+    return `
+      <div class="gprow ${isL?'loser':''}" onclick="toggle(${p.id})">
+        <div class="cbox ${isL?'on':''}">${isL?'−':''}</div>
+        <div class="gpname">${escapeHtml(p.name)}</div>
+        <div class="gpmoney" style="color:${col}">${euro(p.money)}</div>
+      </div>`;
+  }).join('');
+  const hist = S.history.length? `
+    <div class="eyebrow mt-lg" style="margin-bottom:10px">Histórico</div>
+    ${[...S.history].reverse().map(h=>`
+      <div class="hrow">
+        <span class="hround">R${h.round}</span>
+        <span class="hdetail">${h.cards} carta${h.cards>1?'s':''} · ${val(h.value)}</span>
+        <span>${h.perfect?'perfeita':h.losers+' perdeu'+(h.losers>1?'ram':'')}</span>
+      </div>`).join('')}` : '';
+  return `
+    <button class="back" onclick="go('home')">‹ Menu</button>
+    <div class="card roundcard">
+      <div class="eyebrow">Ronda ${S.roundIndex+1} · ${cards} carta${cards>1?'s':''}</div>
+      <div class="roundval">${val(S.currentValue)}</div>
+      <div class="roundhelp">${perfect
+        ? 'Ninguém marcado → ronda perfeita, valor sobe'
+        : S.selected.length+' a perder · cada um paga '+val(S.currentValue)}</div>
+    </div>
+    <div class="eyebrow mt-lg">Quem perdeu esta ronda?</div>
+    <p class="hint">Toca em quem perdeu. Os restantes ganham.</p>
+    ${rows}
+    <button class="btn btn-primary mt" onclick="confirmRound()">
+      ${perfect?'Registar ronda perfeita':'Registar ronda'}</button>
+    <button class="btn btn-danger" onclick="go('results')">Terminar jogo</button>
+    ${hist}
+  `;
+}
+
+function results(){
+  const sorted = [...S.balances].sort((a,b)=>b.money-a.money);
+  const rows = sorted.map((p,i)=>{
+    const top=i===0;
+    const col = p.money>0?C.pos : p.money<0?C.neg : C.dim;
+    return `
+      <div class="card rrow ${top?'top':''}">
+        <span class="rank ${top?'top':''}">${i+1}</span>
+        <span class="rname">${escapeHtml(p.name)}</span>
+        <span class="rmoney" style="color:${col}">${euro(p.money)}</span>
+      </div>`;
+  }).join('');
+  return `
+    <div class="eyebrow">Fim de jogo</div>
+    <h1 style="font-size:34px">Contas finais</h1>
+    <p class="sub">Fodinha · ${S.history.length} rondas</p>
+    ${rows}
+    <button class="btn btn-primary mt-lg" onclick="go('setup')">Novo jogo</button>
+    <button class="btn btn-ghost" onclick="go('home')">Menu principal</button>
+  `;
+}
+
+// actions
+function go(s){ if(s==='setup'){resetSetup();} S.screen=s; render(); }
+function goSetup(){ resetSetup(); S.screen='setup'; render(); }
+function resetSetup(){
+  S.players=[{id:1,name:''},{id:2,name:''},{id:3,name:''}];
+  S.baseValue=1; S.increment=1; pid=4;
+}
+function setName(id,v){ const p=S.players.find(x=>x.id===id); if(p)p.name=v; }
+function addP(){ if(S.players.length<20){ S.players.push({id:pid++,name:''}); render(); } }
+function removeP(id){ if(S.players.length>2){ S.players=S.players.filter(p=>p.id!==id); render(); } }
+
+function startGame(){
+  S.currentValue=S.baseValue; S.roundIndex=0; S.history=[]; S.selected=[];
+  S.balances=S.players.map((p,i)=>({
+    id:p.id, name:(p.name||'').trim()||('Jogador '+(i+1)), money:0
+  }));
+  S.screen='game'; render();
+}
+function toggle(id){
+  S.selected = S.selected.includes(id)
+    ? S.selected.filter(x=>x!==id) : [...S.selected,id];
+  render();
+}
+function confirmRound(){
+  const value=S.currentValue;
+  const losers=S.balances.filter(b=>S.selected.includes(b.id));
+  const winners=S.balances.filter(b=>!S.selected.includes(b.id));
+  const perfect=losers.length===0;
+  if(!perfect && winners.length>0){
+    const pot=losers.length*value;
+    const share=pot/winners.length;
+    S.balances.forEach(b=>{
+      if(S.selected.includes(b.id)) b.money-=value;
+      else b.money+=share;
+    });
+  }
+  S.history.push({round:S.roundIndex+1, cards:cardsFor(S.roundIndex),
+    value, losers:losers.length, perfect});
+  S.currentValue = perfect ? value+S.increment : S.baseValue;
+  S.roundIndex++;
+  S.selected=[];
+  render();
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>(
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+render();
+</script>
+</body>
+</html>

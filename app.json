@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "CardScore",
+    "slug": "cardscore",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": { "backgroundColor": "#0F1419" },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
+    "android": { "package": "com.cardscore.app" },
+    "web": { "bundler": "metro" }
+  }
+}
