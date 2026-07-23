@@ -1,6 +1,7 @@
 import { listGames, getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
 import { Card, Eyebrow } from '../ui/components.jsx';
+import InstallBanner from '../ui/InstallBanner.jsx';
 
 export default function HomeScreen({ onPickGame, activeSession, onResume, historyCount, onHistory }) {
   const games = listGames();
@@ -23,6 +24,8 @@ export default function HomeScreen({ onPickGame, activeSession, onResume, histor
       <Eyebrow>Contas de jogo</Eyebrow>
       <h1>CardScore</h1>
       <p className="sub">Escolhe o jogo. As contas fazem-se sozinhas.</p>
+
+      <InstallBanner />
 
       {resumeInfo && (
         <>

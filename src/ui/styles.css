@@ -340,6 +340,106 @@ h2 {
   font-weight: 800;
 }
 
+/* Cartão de instalação (topo da Home) */
+.install {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(180deg, #223229, var(--surfaceAlt));
+  border: 1px solid var(--goldDim);
+  border-radius: var(--radius-lg);
+  padding: 14px 14px 14px 16px;
+  margin-bottom: 18px;
+}
+.install-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+.install-body {
+  flex: 1;
+  min-width: 0;
+}
+.install-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.install-sub {
+  color: var(--textDim);
+  font-size: 13px;
+  margin-top: 2px;
+}
+.install-btn {
+  background: var(--gold);
+  color: #0f1714;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.install-x {
+  background: none;
+  border: none;
+  color: var(--textDim);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Modal (instruções iOS) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  max-width: 460px;
+  width: 100%;
+  margin-bottom: max(16px, env(safe-area-inset-bottom));
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.modal-sub {
+  color: var(--textDim);
+  font-size: 14px;
+  margin: 0 0 14px;
+}
+.steps {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  line-height: 1.7;
+  font-size: 15px;
+}
+.steps li {
+  margin-bottom: 6px;
+}
+.ios-share {
+  color: var(--gold);
+  font-weight: 800;
+}
+.modal-note {
+  color: var(--textDim);
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+
 /* cores de dinheiro */
 .pos {
   color: var(--pos);
