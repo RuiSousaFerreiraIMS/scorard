@@ -14,8 +14,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'CardScore',
-        short_name: 'CardScore',
+        name: 'Scorard',
+        short_name: 'Scorard',
         description: 'Contagem de pontos para jogos de cartas.',
         lang: 'pt',
         theme_color: '#0F1714',

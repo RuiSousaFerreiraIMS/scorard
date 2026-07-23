@@ -22,7 +22,7 @@ export default function HomeScreen({ onPickGame, activeSession, onResume, histor
   return (
     <>
       <Eyebrow>Contas de jogo</Eyebrow>
-      <h1>CardScore</h1>
+      <h1>Scorard</h1>
       <p className="sub">Escolhe o jogo. As contas fazem-se sozinhas.</p>
 
       <InstallBanner />
@@ -56,14 +56,6 @@ export default function HomeScreen({ onPickGame, activeSession, onResume, histor
           <div style={{ color: 'var(--gold)', fontSize: 30 }}>›</div>
         </Card>
       ))}
-
-      {/* Placeholders de jogos futuros (o Sobe e Desce entra a seguir) */}
-      <Card className="row disabled">
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>Sobe e Desce</div>
-          <div className="muted" style={{ fontSize: 14, marginTop: 3 }}>Em breve</div>
-        </div>
-      </Card>
 
       <div className="mt-lg" />
       <Eyebrow style={{ marginBottom: 10 }}>Histórico</Eyebrow>

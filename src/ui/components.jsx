@@ -38,3 +38,12 @@ export function BackButton({ onClick, children = '‹ Menu' }) {
 export function moneyClass(score) {
   return score > 0 ? 'pos' : score < 0 ? 'neg' : 'dim';
 }
+
+// Cor de um item de standings: usa o 'tone' do jogo se existir, senão o sinal.
+export function toneClass(entry) {
+  if (entry.tone === 'gold') return 'goldtxt';
+  if (entry.tone === 'pos') return 'pos';
+  if (entry.tone === 'neg') return 'neg';
+  if (entry.tone === 'dim') return 'dim';
+  return moneyClass(entry.score);
+}

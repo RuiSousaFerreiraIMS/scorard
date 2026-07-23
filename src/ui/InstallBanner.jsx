@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useInstall } from '../core/useInstall';
 
-const DISMISS_KEY = 'cardscore:installDismissed';
+const DISMISS_KEY = 'scorard:installDismissed';
 
 function wasDismissed() {
   try {

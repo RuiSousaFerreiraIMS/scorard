@@ -1,6 +1,6 @@
 import { getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
-import { Eyebrow, Card, Button, moneyClass } from '../ui/components.jsx';
+import { Eyebrow, Card, Button, toneClass } from '../ui/components.jsx';
 
 export default function ResultsScreen({ session, onNewGame, onHome, onShare }) {
   const game = getGame(session.gameId);
@@ -21,8 +21,11 @@ export default function ResultsScreen({ session, onNewGame, onHome, onShare }) {
         return (
           <Card key={p.playerId} className={`row rrow ${top ? 'top' : ''}`}>
             <span className={`rank ${top ? 'top' : ''}`}>{i + 1}</span>
-            <span className="rname">{p.name}</span>
-            <span className={`rmoney ${moneyClass(p.score)}`}>{p.scoreLabel}</span>
+            <span style={{ flex: 1 }}>
+              <span className="rname">{p.name}</span>
+              {p.detail && <span className="rdetail">{p.detail}</span>}
+            </span>
+            <span className={`rmoney ${toneClass(p)}`}>{p.scoreLabel}</span>
           </Card>
         );
       })}

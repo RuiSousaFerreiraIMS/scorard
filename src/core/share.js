@@ -10,7 +10,7 @@ export function buildResultText(session) {
   const game = getGame(session.gameId);
   const standings = game.getStandings(deriveState(session, game));
   const lines = [
-    `🃏 CardScore · ${game.name}`,
+    `🃏 Scorard · ${game.name}`,
     formatDate(session.finishedAt || session.startedAt),
     '',
     ...standings.map((p, i) => {
@@ -25,7 +25,7 @@ export async function shareResult(session) {
   const text = buildResultText(session);
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'CardScore', text });
+      await navigator.share({ title: 'Scorard', text });
       return 'shared';
     }
   } catch {

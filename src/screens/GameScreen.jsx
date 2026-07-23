@@ -9,6 +9,7 @@ export default function GameScreen({ session, onSubmitRound, onUndo, onFinish, o
   const state = deriveState(session, game);
   const RoundInput = game.RoundInput;
   const rounds = session.rounds;
+  const finished = game.isFinished(state);
 
   const confirmFinish = () => {
     if (window.confirm('Terminar jogo e mostrar as contas finais?')) onFinish();
@@ -18,7 +19,16 @@ export default function GameScreen({ session, onSubmitRound, onUndo, onFinish, o
     <>
       <BackButton onClick={onBack} />
 
-      <RoundInput game={game} state={state} onSubmit={onSubmitRound} />
+      {finished ? (
+        <div className="card roundcard" style={{ textAlign: 'center' }}>
+          <div className="eyebrow">Jogo terminado</div>
+          <div className="roundval" style={{ fontSize: 24 }}>Alguém chegou a 0</div>
+          <Button onClick={onFinish}>Ver contas finais</Button>
+        </div>
+      ) : (
+        // key por nº de rondas: força recomeçar o input a cada ronda (reset limpo)
+        <RoundInput key={rounds.length} game={game} state={state} onSubmit={onSubmitRound} />
+      )}
 
       <div className="mt-lg" />
       <div style={{ display: 'flex', gap: 10 }}>

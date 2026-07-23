@@ -1,23 +1,25 @@
-# CardScore
+# Scorard
 
 App de contagem de pontos para jogos de cartas. As contas de dinheiro e pontos
 fazem-se sozinhas. É uma **PWA** (web app instalável): funciona em Android e iPhone,
 "adicionar ao ecrã inicial" e fica com ícone como uma app. Offline depois da 1ª visita.
 0€ de custos — hosting grátis no GitHub Pages.
 
-Primeiro jogo pronto: **Fodinha**. A seguir: **Sobe e Desce**
-(spec pronta em `docs/sobe-e-desce-spec.md`).
+Jogos prontos: **Fodinha** e **Sobe e Desce**.
 
 ## Estado do projeto
 
 - **Base PWA** — Vite + React, instalável e offline.
 - **Fodinha** — implementada, contas de dinheiro validadas por testes.
+- **Sobe e Desce** — implementado a partir de `docs/sobe-e-desce-spec.md`; motor
+  de pontuação validado contra os casos T1–T8 da spec. Assistente de ronda
+  (escolher/virar → quem vai → vazas), obrigatoriedades automáticas, barra de
+  pontuações e conta final em €.
 - **Histórico** — jogos terminados guardados localmente (comum a todos os jogos),
-  com detalhe ronda-a-ronda.
+  com detalhe ronda-a-ronda; dá para apagar jogos.
 - **Desfazer** — anula a última ronda a qualquer momento.
+- **Instalar** — botão real no Android; instruções no iPhone.
 - **Partilhar resultado** — texto das contas finais para o WhatsApp & afins.
-- **Sobe e Desce** — spec de pontuação completa em `docs/sobe-e-desce-spec.md`.
-  Falta implementar o módulo (é o próximo jogo).
 
 ## Como correr localmente
 
@@ -105,7 +107,7 @@ não mudam** — são moldura genérica.
 ## Roadmap
 
 1. ~~Converter a base para PWA + migrar a Fodinha.~~ ✅
-2. Implementar o Sobe e Desce a partir da spec.
+2. ~~Implementar o Sobe e Desce a partir da spec.~~ ✅
 3. Partilha de sessão ao vivo (link só-de-ver + comentários) — precisa de servidor,
    spec própria.
 4. Áudio da pontuação e jogos seguintes (Sueca, Hearts, …).

@@ -4,11 +4,13 @@ import SetupScreen from './screens/SetupScreen.jsx';
 import GameScreen from './screens/GameScreen.jsx';
 import ResultsScreen from './screens/ResultsScreen.jsx';
 import HistoryScreen from './screens/HistoryScreen.jsx';
+import { getGame } from './core/gameRegistry';
 import {
   createSession,
   appendRound,
   undoRound,
   finishSession,
+  deriveState,
 } from './core/session';
 import {
   saveActive,
@@ -16,6 +18,7 @@ import {
   clearActive,
   loadHistory,
   addToHistory,
+  removeFromHistory,
 } from './core/storage';
 import { shareResult } from './core/share';
 
@@ -56,8 +59,27 @@ export default function App() {
     setScreen('game');
   };
 
-  const submitRound = (input) => persist(appendRound(session, input));
+  const submitRound = (input) => {
+    const next = appendRound(session, input);
+    persist(next);
+    // fim de jogo automático (ex: Sobe e Desce chega a 0)
+    const game = getGame(next.gameId);
+    if (game.isFinished(deriveState(next, game))) {
+      const done = finishSession(next);
+      addToHistory(done);
+      clearActive();
+      setSession(done);
+      setActive(null);
+      setHistory(loadHistory());
+      setScreen('results');
+    }
+  };
   const undo = () => persist(undoRound(session));
+
+  const removeHistory = (id) => {
+    removeFromHistory(id);
+    setHistory(loadHistory());
+  };
 
   const resumeGame = () => {
     const saved = loadActive();
@@ -130,6 +152,7 @@ export default function App() {
           history={history}
           onBack={goHome}
           onShare={(s) => shareResult(s)}
+          onRemove={removeHistory}
         />
       )}
     </>

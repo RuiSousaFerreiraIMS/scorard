@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { getGame } from '../core/gameRegistry';
 import { deriveState, deriveStepStates } from '../core/session';
 import { formatDateTime } from '../core/format';
-import { Eyebrow, Card, Button, BackButton, moneyClass } from '../ui/components.jsx';
+import { Eyebrow, Card, Button, BackButton, toneClass } from '../ui/components.jsx';
 
 // Histórico comum a todos os jogos: lista de sessões terminadas + detalhe
 // ronda-a-ronda (derivado dos rounds, sem código específico do jogo).
@@ -11,7 +11,17 @@ export default function HistoryScreen({ history, onBack, onRemove, onShare }) {
   const open = history.find((s) => s.id === openId);
 
   if (open) {
-    return <Detail session={open} onBack={() => setOpenId(null)} onShare={onShare} />;
+    return (
+      <Detail
+        session={open}
+        onBack={() => setOpenId(null)}
+        onShare={onShare}
+        onRemove={() => {
+          onRemove(open.id);
+          setOpenId(null);
+        }}
+      />
+    );
   }
 
   return (
@@ -53,11 +63,15 @@ export default function HistoryScreen({ history, onBack, onRemove, onShare }) {
   );
 }
 
-function Detail({ session, onBack, onShare }) {
+function Detail({ session, onBack, onShare, onRemove }) {
   const game = getGame(session.gameId);
   const finalState = deriveState(session, game);
   const standings = game.getStandings(finalState);
   const steps = deriveStepStates(session, game);
+
+  const confirmRemove = () => {
+    if (window.confirm('Apagar este jogo do histórico? Não dá para recuperar.')) onRemove();
+  };
 
   return (
     <>
@@ -72,8 +86,11 @@ function Detail({ session, onBack, onShare }) {
       {standings.map((p, i) => (
         <Card key={p.playerId} className={`row rrow ${i === 0 ? 'top' : ''}`}>
           <span className={`rank ${i === 0 ? 'top' : ''}`}>{i + 1}</span>
-          <span className="rname">{p.name}</span>
-          <span className={`rmoney ${moneyClass(p.score)}`}>{p.scoreLabel}</span>
+          <span style={{ flex: 1 }}>
+            <span className="rname">{p.name}</span>
+            {p.detail && <span className="rdetail">{p.detail}</span>}
+          </span>
+          <span className={`rmoney ${toneClass(p)}`}>{p.scoreLabel}</span>
         </Card>
       ))}
 
@@ -105,6 +122,9 @@ function Detail({ session, onBack, onShare }) {
       <div className="mt-xl" />
       <Button variant="ghost" onClick={() => onShare(session)}>
         Partilhar resultado
+      </Button>
+      <Button variant="danger" onClick={confirmRemove}>
+        Apagar do histórico
       </Button>
     </>
   );

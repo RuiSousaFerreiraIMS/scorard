@@ -12,8 +12,9 @@
 //   roundSummary(input, index, players), RoundInput (componente React)
 
 import fodinha from '../games/fodinha/index.js';
+import sobeedesce from '../games/sobeedesce/index.js';
 
-const GAMES = [fodinha];
+const GAMES = [fodinha, sobeedesce];
 
 export function listGames() {
   return GAMES.map((g) => ({

@@ -1,4 +1,4 @@
-/* CardScore — tema "mesa de jogo nocturna".
+/* Scorard — tema "mesa de jogo nocturna".
    Verde-feltro como base, dourado de ficha para destaques,
    vermelho/verde só para sinais de dinheiro. Adaptado dos mockups. */
 
@@ -438,6 +438,276 @@ h2 {
   color: var(--textDim);
   font-size: 13px;
   margin: 0 0 16px;
+}
+
+/* Results / History: linha secundária de detalhe (ex: "paga 2.40 €") */
+.rdetail {
+  display: block;
+  color: var(--textDim);
+  font-size: 13px;
+  margin-top: 2px;
+}
+.goldtxt {
+  color: var(--gold);
+}
+
+/* ---- Sobe e Desce: assistente de ronda ---- */
+:root {
+  --copas: #d46a8a;
+}
+
+/* barra de pontuações (topo do wizard) */
+.sd-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 9px 10px;
+  margin-bottom: 16px;
+}
+.sd-bar-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--goldDim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-align: center;
+}
+.sd-bar-row {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sd-bar-row::-webkit-scrollbar {
+  display: none;
+}
+.sd-chip {
+  flex: 0 0 auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 11px;
+  text-align: center;
+  min-width: 54px;
+}
+.sd-chip.lead {
+  border-color: var(--gold);
+  background: var(--surfaceAlt);
+}
+.sd-chip.danger {
+  border-color: var(--neg);
+}
+.sd-chip-n {
+  font-size: 11px;
+  color: var(--textDim);
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 74px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sd-chip-v {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1.15;
+}
+.sd-chip.danger .sd-chip-v {
+  color: var(--neg);
+}
+
+/* pontos de passo */
+.stepdot {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.stepdot span {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--border);
+}
+.stepdot span.on {
+  background: var(--gold);
+}
+
+.qlabel {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 2px 0 4px;
+}
+.qhelp {
+  color: var(--textDim);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+/* chips de escolha (trunfo, modo, desempate) */
+.chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: inherit;
+}
+.chip.on {
+  border-color: var(--gold);
+  background: var(--surfaceAlt);
+  color: var(--gold);
+}
+.chip.copas.on {
+  border-color: var(--copas);
+  color: var(--copas);
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.grid2 .chip {
+  margin-bottom: 0;
+}
+
+/* multiplicador (badge) */
+.mult {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--surfaceAlt);
+  color: var(--gold);
+}
+.mult.copas {
+  color: var(--copas);
+}
+
+/* linha ir/passar */
+.jrow {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 9px;
+  gap: 12px;
+}
+.jrow.chooser {
+  border-color: var(--goldDim);
+}
+.jname {
+  font-size: 16px;
+  font-weight: 600;
+}
+.jpts {
+  font-size: 12px;
+  color: var(--textDim);
+  margin-top: 2px;
+}
+.seg {
+  display: flex;
+  background: var(--bg);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.seg button {
+  border: none;
+  background: none;
+  color: var(--textDim);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.seg button.go {
+  color: var(--pos);
+}
+.seg button.go.on {
+  background: var(--pos);
+  color: #0f1714;
+}
+.seg button.pass.on {
+  background: var(--neg);
+  color: #fff;
+}
+.lock {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.alert {
+  background: #241a18;
+  border: 1px solid var(--neg);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #fadad3;
+}
+.alert b {
+  color: var(--neg);
+}
+
+/* vazas */
+.vrow {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 9px;
+  gap: 10px;
+}
+.vname {
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+.vstep {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surfaceAlt);
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.vval {
+  width: 34px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+}
+.vsum {
+  text-align: center;
+  color: var(--textDim);
+  font-size: 14px;
+  margin: 6px 0 0;
+}
+.vsum.bad {
+  color: var(--neg);
 }
 
 /* cores de dinheiro */

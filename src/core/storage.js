@@ -7,8 +7,26 @@
 // Todos os acessos são defensivos: quota cheia ou modo privado nunca rebentam a
 // app; o pior caso é não persistir.
 
-const ACTIVE_KEY = 'cardscore:active';
-const HISTORY_KEY = 'cardscore:history';
+const ACTIVE_KEY = 'scorard:active';
+const HISTORY_KEY = 'scorard:history';
+
+// Migração dos nomes antigos (cardscore:*) para os novos (scorard:*), uma vez.
+(function migrateOldKeys() {
+  try {
+    for (const [oldKey, newKey] of [
+      ['cardscore:active', ACTIVE_KEY],
+      ['cardscore:history', HISTORY_KEY],
+    ]) {
+      const old = localStorage.getItem(oldKey);
+      if (old != null && localStorage.getItem(newKey) == null) {
+        localStorage.setItem(newKey, old);
+      }
+      if (old != null) localStorage.removeItem(oldKey);
+    }
+  } catch {
+    /* ignora */
+  }
+})();
 
 function read(key) {
   try {
