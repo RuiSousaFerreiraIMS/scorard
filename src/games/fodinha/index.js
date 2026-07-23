@@ -1,4 +1,4 @@
-// src/games/fodinha.js
+// src/games/fodinha/index.js
 //
 // FODINHA
 // - 2 a 20 jogadores
@@ -6,18 +6,27 @@
 // - quem PERDE paga o valor da ronda; o total pago divide-se pelos que ganham
 // - ronda perfeita (ninguem perde) -> ninguem paga e o valor sobe no incremento
 // - sequencia de cartas: 1,2,3,4,5,4,3,2,1 (so informativa)
-// - jogo termina quando o utilizador decidir
+// - jogo termina quando o utilizador decidir (isFinished sempre false)
+//
+// Nota: a lógica de dinheiro é a mesma da versão Expo, mas agora o estado é
+// SEMPRE derivado dos rounds (event sourcing). createState/applyRound são puros
+// e não guardam history[] — isso é reconstruído pelo core a partir dos rounds.
+
+import { formatEuro } from '../../core/format';
+import RoundInput from './RoundInput.jsx';
 
 const CARD_SEQUENCE = [1, 2, 3, 4, 5, 4, 3, 2, 1];
-function cardsForRound(roundIndex) { return CARD_SEQUENCE[roundIndex % CARD_SEQUENCE.length]; }
+function cardsForRound(roundIndex) {
+  return CARD_SEQUENCE[roundIndex % CARD_SEQUENCE.length];
+}
 
 const fodinha = {
   id: 'fodinha',
   name: 'Fodinha',
-  description: 'Apostas por ronda, contas de dinheiro automaticas.',
+  description: 'Apostas por ronda, contas de dinheiro automáticas.',
   minPlayers: 2,
   maxPlayers: 20,
-  inputComponentKey: 'pickLosers',
+  RoundInput,
 
   setupFields: [
     { key: 'baseValue', label: 'Valor da ronda (€)', type: 'number', default: 1 },
@@ -28,9 +37,11 @@ const fodinha = {
     const baseValue = Number(setup.baseValue) || 1;
     const increment = Number(setup.increment) || 1;
     return {
-      baseValue, increment, currentValue: baseValue, roundIndex: 0, finished: false,
+      baseValue,
+      increment,
+      currentValue: baseValue,
+      roundIndex: 0,
       balances: players.map((p) => ({ playerId: p.id, name: p.name, money: 0 })),
-      history: [],
     };
   },
 
@@ -39,7 +50,8 @@ const fodinha = {
     return {
       label: `Ronda ${state.roundIndex + 1} · ${cards} carta${cards > 1 ? 's' : ''}`,
       helper: `Valor desta ronda: ${formatEuro(state.currentValue)}`,
-      value: state.currentValue, cards,
+      value: state.currentValue,
+      cards,
     };
   },
 
@@ -61,28 +73,36 @@ const fodinha = {
       }
     }
     const nextValue = perfect ? value + state.increment : state.baseValue;
-    const entry = {
-      round: state.roundIndex + 1, cards: cardsForRound(state.roundIndex),
-      value, loserIds: [...loserIds], perfect,
-    };
     return {
-      ...state, currentValue: nextValue, roundIndex: state.roundIndex + 1,
-      balances: newBalances, history: [...state.history, entry],
+      ...state,
+      currentValue: nextValue,
+      roundIndex: state.roundIndex + 1,
+      balances: newBalances,
     };
   },
 
-  isFinished(state) { return !!state.finished; },
-  finish(state) { return { ...state, finished: true }; },
+  isFinished() {
+    return false;
+  },
 
   getStandings(state) {
     return [...state.balances]
       .sort((a, b) => b.money - a.money)
       .map((b) => ({
-        playerId: b.playerId, name: b.name, score: b.money, scoreLabel: formatEuro(b.money),
+        playerId: b.playerId,
+        name: b.name,
+        score: b.money,
+        scoreLabel: formatEuro(b.money),
       }));
+  },
+
+  // Resumo de uma ronda para o histórico (comum a todos os jogos).
+  roundSummary(input) {
+    const n = (input.loserIds || []).length;
+    if (n === 0) return 'ronda perfeita';
+    return `${n} ${n > 1 ? 'perderam' : 'perdeu'}`;
   },
 };
 
-function formatEuro(n) { const sign = n > 0 ? '+' : ''; return `${sign}${n.toFixed(2)} €`; }
-
+export const _internals = { cardsForRound, CARD_SEQUENCE };
 export default fodinha;

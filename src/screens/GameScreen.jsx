@@ -1,0 +1,58 @@
+import { getGame } from '../core/gameRegistry';
+import { deriveState } from '../core/session';
+import { Eyebrow, Button, BackButton } from '../ui/components.jsx';
+
+// Moldura genérica de jogo. O miolo do input é do jogo (game.RoundInput);
+// tudo o resto — desfazer, histórico da sessão, terminar — é comum.
+export default function GameScreen({ session, onSubmitRound, onUndo, onFinish, onBack }) {
+  const game = getGame(session.gameId);
+  const state = deriveState(session, game);
+  const RoundInput = game.RoundInput;
+  const rounds = session.rounds;
+
+  const confirmFinish = () => {
+    if (window.confirm('Terminar jogo e mostrar as contas finais?')) onFinish();
+  };
+
+  return (
+    <>
+      <BackButton onClick={onBack} />
+
+      <RoundInput game={game} state={state} onSubmit={onSubmitRound} />
+
+      <div className="mt-lg" />
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          style={{ marginTop: 0 }}
+          onClick={onUndo}
+          disabled={rounds.length === 0}
+        >
+          ↶ Desfazer ronda
+        </button>
+        <button type="button" className="btn btn-danger" style={{ marginTop: 0 }} onClick={confirmFinish}>
+          Terminar jogo
+        </button>
+      </div>
+
+      {rounds.length > 0 && (
+        <>
+          <div className="mt-lg" />
+          <Eyebrow style={{ marginBottom: 10 }}>Histórico da sessão</Eyebrow>
+          {rounds
+            .map((input, i) => ({ input, n: i + 1 }))
+            .reverse()
+            .map(({ input, n }) => (
+              <div key={n} className="hrow">
+                <span className="hround">R{n}</span>
+                <span className="hdetail">
+                  {game.roundSummary ? game.roundSummary(input, n - 1, session.players) : `ronda ${n}`}
+                </span>
+              </div>
+            ))}
+        </>
+      )}
+    </>
+  );
+}

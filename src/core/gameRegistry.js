@@ -1,22 +1,27 @@
 // src/core/gameRegistry.js
 //
-// O registry e o unico sitio onde se "liga" um jogo novo a app.
-// Para adicionar a sueca/hearts depois: cria src/games/<jogo>.js a cumprir
-// a mesma interface e adiciona aqui ao array. Mais nada muda no resto da app.
+// O registry é o único sítio onde se "liga" um jogo novo à app.
+// Para adicionar o Sobe e Desce / Sueca / Hearts: cria uma pasta em src/games/<jogo>/
+// com um index.js a cumprir o contrato abaixo e acrescenta-o a este array.
+// Mais nada muda no resto da app — os ecrãs são moldura genérica.
 //
-// CONTRATO QUE CADA JOGO TEM DE CUMPRIR (ver fodinha.js como referencia):
-//   id, name, description, minPlayers, maxPlayers, setupFields,
-//   createState(players, setup), getRoundConfig(state), applyRound(state, input),
-//   isFinished(state), getStandings(state), inputComponentKey
+// CONTRATO QUE CADA JOGO TEM DE CUMPRIR (ver games/fodinha/index.js como referência):
+//   id, name, description, minPlayers, maxPlayers,
+//   setupFields, createState(players, setup), applyRound(state, input),
+//   getRoundConfig(state), getStandings(state), isFinished(state),
+//   roundSummary(input, index, players), RoundInput (componente React)
 
-import fodinha from '../games/fodinha';
+import fodinha from '../games/fodinha/index.js';
 
 const GAMES = [fodinha];
 
 export function listGames() {
   return GAMES.map((g) => ({
-    id: g.id, name: g.name, description: g.description,
-    minPlayers: g.minPlayers, maxPlayers: g.maxPlayers,
+    id: g.id,
+    name: g.name,
+    description: g.description,
+    minPlayers: g.minPlayers,
+    maxPlayers: g.maxPlayers,
   }));
 }
 
