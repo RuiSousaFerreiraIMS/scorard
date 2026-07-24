@@ -4,7 +4,9 @@ import SetupScreen from './screens/SetupScreen.jsx';
 import GameScreen from './screens/GameScreen.jsx';
 import ResultsScreen from './screens/ResultsScreen.jsx';
 import HistoryScreen from './screens/HistoryScreen.jsx';
+import SharedView from './screens/SharedView.jsx';
 import { getGame } from './core/gameRegistry';
+import { readShareHash } from './core/shareLink';
 import {
   createSession,
   appendRound,
@@ -20,9 +22,13 @@ import {
   addToHistory,
   removeFromHistory,
 } from './core/storage';
-import { shareResult } from './core/share';
+import { shareResult, shareSessionLink } from './core/share';
 
 export default function App() {
+  // Se o URL trouxer uma sessão partilhada (#s=...), mostra a vista só-de-leitura
+  // e não arranca a app normal (não toca no storage do visitante).
+  const [shared] = useState(() => readShareHash());
+
   const [screen, setScreen] = useState('home');
   const [gameId, setGameId] = useState(null);
   const [session, setSession] = useState(null);
@@ -107,6 +113,8 @@ export default function App() {
     setScreen('setup');
   };
 
+  if (shared) return <SharedView data={shared} />;
+
   return (
     <>
       {screen === 'home' && (
@@ -135,6 +143,7 @@ export default function App() {
           onUndo={undo}
           onFinish={finishGame}
           onBack={goHome}
+          onShareLive={() => shareSessionLink(session)}
         />
       )}
 
@@ -144,6 +153,7 @@ export default function App() {
           onNewGame={newGameSameGroup}
           onHome={goHome}
           onShare={() => shareResult(session)}
+          onShareLive={() => shareSessionLink(session)}
         />
       )}
 

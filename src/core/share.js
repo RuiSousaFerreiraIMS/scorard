@@ -5,6 +5,7 @@
 import { getGame } from './gameRegistry';
 import { deriveState } from './session';
 import { formatDate } from './format';
+import { buildShareUrl } from './shareLink';
 
 export function buildResultText(session) {
   const game = getGame(session.gameId);
@@ -19,6 +20,35 @@ export function buildResultText(session) {
     }),
   ];
   return lines.join('\n');
+}
+
+// Partilha um link só-de-leitura para acompanhar a sessão (vista + promoção).
+export async function shareSessionLink(session) {
+  const game = getGame(session.gameId);
+  const url = buildShareUrl(session);
+  const text = `Acompanha o nosso ${game.name} na Scorard 👀`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Scorard', text, url });
+      return 'shared';
+    }
+  } catch {
+    // cancelado ou falhou → tenta copiar
+  }
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+      return 'copied';
+    }
+  } catch {
+    /* ignora */
+  }
+  try {
+    window.prompt('Copia o link para acompanhar o jogo:', url);
+  } catch {
+    /* ignora */
+  }
+  return 'prompt';
 }
 
 export async function shareResult(session) {

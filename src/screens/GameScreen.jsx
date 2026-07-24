@@ -4,7 +4,7 @@ import { Eyebrow, Button, BackButton } from '../ui/components.jsx';
 
 // Moldura genérica de jogo. O miolo do input é do jogo (game.RoundInput);
 // tudo o resto — desfazer, histórico da sessão, terminar — é comum.
-export default function GameScreen({ session, onSubmitRound, onUndo, onFinish, onBack }) {
+export default function GameScreen({ session, onSubmitRound, onUndo, onFinish, onBack, onShareLive }) {
   const game = getGame(session.gameId);
   const state = deriveState(session, game);
   const RoundInput = game.RoundInput;
@@ -45,6 +45,12 @@ export default function GameScreen({ session, onSubmitRound, onUndo, onFinish, o
           Terminar jogo
         </button>
       </div>
+
+      {onShareLive && rounds.length > 0 && (
+        <button type="button" className="btn btn-ghost" onClick={onShareLive}>
+          🔗 Partilhar sessão (link para acompanhar)
+        </button>
+      )}
 
       {rounds.length > 0 && (
         <>

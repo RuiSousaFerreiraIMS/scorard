@@ -2,7 +2,7 @@ import { getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
 import { Eyebrow, Card, Button, toneClass } from '../ui/components.jsx';
 
-export default function ResultsScreen({ session, onNewGame, onHome, onShare }) {
+export default function ResultsScreen({ session, onNewGame, onHome, onShare, onShareLive }) {
   const game = getGame(session.gameId);
   const state = deriveState(session, game);
   const standings = game.getStandings(state);
@@ -34,6 +34,11 @@ export default function ResultsScreen({ session, onNewGame, onHome, onShare }) {
       <Button onClick={onShare} variant="ghost">
         Partilhar resultado
       </Button>
+      {onShareLive && (
+        <Button onClick={onShareLive} variant="ghost">
+          🔗 Partilhar link do jogo
+        </Button>
+      )}
       <Button onClick={onNewGame}>Novo jogo</Button>
       <Button onClick={onHome} variant="ghost">
         Menu principal
