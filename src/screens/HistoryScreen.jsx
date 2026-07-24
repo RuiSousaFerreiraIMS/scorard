@@ -75,7 +75,7 @@ function Detail({ session, onBack, onShare, onRemove }) {
 
   return (
     <>
-      <BackButton onClick={onBack} children="‹ Histórico" />
+      <BackButton onClick={onBack} label="Histórico" />
       <Eyebrow>{game.name}</Eyebrow>
       <h2>Contas finais</h2>
       <p className="sub">

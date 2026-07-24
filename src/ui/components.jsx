@@ -1,5 +1,7 @@
 // Componentes de UI reutilizáveis (comuns a todos os ecrãs).
 
+import { Icon } from './icons.jsx';
+
 export function Button({ children, onClick, variant = 'primary', disabled, type = 'button' }) {
   const cls =
     variant === 'ghost' ? 'btn-ghost' : variant === 'danger' ? 'btn-danger' : 'btn-primary';
@@ -26,10 +28,10 @@ export function Card({ children, className = '', onClick, style }) {
   );
 }
 
-export function BackButton({ onClick, children = '‹ Menu' }) {
+export function BackButton({ onClick, label = 'Voltar' }) {
   return (
-    <button type="button" className="back" onClick={onClick}>
-      {children}
+    <button type="button" className="iconbtn backbtn" onClick={onClick} aria-label={label}>
+      <Icon name="back" size={22} />
     </button>
   );
 }

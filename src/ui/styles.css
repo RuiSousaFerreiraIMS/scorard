@@ -279,6 +279,9 @@ body {
   color: var(--gold);
   border-color: var(--goldDim);
 }
+.backbtn {
+  margin-bottom: 14px;
+}
 .detail-hero {
   text-align: center;
   margin-bottom: 6px;

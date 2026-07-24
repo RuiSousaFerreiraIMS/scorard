@@ -46,11 +46,12 @@ export default function SetupScreen({ gameId, initialPlayers, onStart, onBack })
 
   return (
     <>
-      <BackButton onClick={onBack} children="‹ Voltar" />
+      <BackButton onClick={onBack} />
       <Eyebrow>Configurar</Eyebrow>
-      <h2>{game.name}</h2>
+      <h1 style={{ margin: '4px 0 2px' }}>{game.name}</h1>
+      <p className="sub">Quem joga e as opções da partida.</p>
 
-      <div className="mt-lg" />
+      <div className="mt" />
       <Eyebrow style={{ marginBottom: 10 }}>Jogadores ({players.length})</Eyebrow>
       {players.map((p, i) => (
         <div key={p.id} className="prow">
