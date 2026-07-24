@@ -3,7 +3,7 @@ import { deriveState } from '../core/session';
 import { Card, Eyebrow } from '../ui/components.jsx';
 import InstallBanner from '../ui/InstallBanner.jsx';
 
-export default function HomeScreen({ onPickGame, activeSession, onResume, historyCount, onHistory }) {
+export default function HomeScreen({ onPickGame, activeSession, onResume }) {
   const games = listGames();
 
   let resumeInfo = null;
@@ -56,20 +56,6 @@ export default function HomeScreen({ onPickGame, activeSession, onResume, histor
           <div style={{ color: 'var(--gold)', fontSize: 30 }}>›</div>
         </Card>
       ))}
-
-      <div className="mt-lg" />
-      <Eyebrow style={{ marginBottom: 10 }}>Histórico</Eyebrow>
-      <Card className="row tappable" onClick={onHistory}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 17, fontWeight: 700 }}>Jogos guardados</div>
-          <div className="muted" style={{ fontSize: 14, marginTop: 3 }}>
-            {historyCount > 0
-              ? `${historyCount} ${historyCount > 1 ? 'jogos guardados' : 'jogo guardado'}`
-              : 'Ainda sem jogos guardados'}
-          </div>
-        </div>
-        <div style={{ color: 'var(--gold)', fontSize: 30 }}>›</div>
-      </Card>
 
       <p className="footer">Mais jogos em breve.</p>
     </>

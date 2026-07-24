@@ -6,7 +6,7 @@ import { Eyebrow, Card, Button, BackButton, toneClass } from '../ui/components.j
 
 // Histórico comum a todos os jogos: lista de sessões terminadas + detalhe
 // ronda-a-ronda (derivado dos rounds, sem código específico do jogo).
-export default function HistoryScreen({ history, onBack, onRemove, onShare }) {
+export default function HistoryScreen({ history, onRemove, onShare }) {
   const [openId, setOpenId] = useState(null);
   const open = history.find((s) => s.id === openId);
 
@@ -26,9 +26,9 @@ export default function HistoryScreen({ history, onBack, onRemove, onShare }) {
 
   return (
     <>
-      <BackButton onClick={onBack} />
-      <Eyebrow>Histórico</Eyebrow>
-      <h2>Jogos guardados</h2>
+      <Eyebrow>O teu registo</Eyebrow>
+      <h1>Histórico</h1>
+      <p className="sub">Todos os jogos que terminaste.</p>
 
       {history.length === 0 && (
         <p className="sub" style={{ marginTop: 12 }}>

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import AppShell from './ui/AppShell.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
 import SetupScreen from './screens/SetupScreen.jsx';
 import GameScreen from './screens/GameScreen.jsx';
 import ResultsScreen from './screens/ResultsScreen.jsx';
 import HistoryScreen from './screens/HistoryScreen.jsx';
+import ProfileScreen from './screens/ProfileScreen.jsx';
 import SharedView from './screens/SharedView.jsx';
 import { getGame } from './core/gameRegistry';
 import { readShareHash } from './core/shareLink';
@@ -29,10 +31,12 @@ export default function App() {
   // e não arranca a app normal (não toca no storage do visitante).
   const [shared] = useState(() => readShareHash());
 
-  const [screen, setScreen] = useState('home');
+  // Navegação: separador (tab) + fluxo de jogo (flow) sobreposto ao separador Jogar.
+  const [tab, setTab] = useState('jogar'); // jogar | historico | perfil
+  const [flow, setFlow] = useState(null); // null | setup | game | results
   const [gameId, setGameId] = useState(null);
   const [session, setSession] = useState(null);
-  const [active, setActive] = useState(null); // sessão retomável (só p/ Home)
+  const [active, setActive] = useState(null); // sessão retomável
   const [history, setHistory] = useState([]);
 
   // Carregar sessão ativa + histórico ao arrancar.
@@ -47,22 +51,25 @@ export default function App() {
     saveActive(s);
   };
 
-  const goHome = () => {
+  const changeTab = (key) => {
     setActive(loadActive());
     setHistory(loadHistory());
-    setScreen('home');
+    setFlow(null);
+    setTab(key);
   };
+
+  const goHome = () => changeTab('jogar');
 
   const pickGame = (id) => {
     setGameId(id);
-    setScreen('setup');
+    setFlow('setup');
   };
 
   const startGame = (players, setup) => {
     const s = createSession(gameId, players, setup);
     persist(s);
     setActive(null);
-    setScreen('game');
+    setFlow('game');
   };
 
   const submitRound = (input) => {
@@ -77,7 +84,7 @@ export default function App() {
       setSession(done);
       setActive(null);
       setHistory(loadHistory());
-      setScreen('results');
+      setFlow('results');
     }
   };
   const undo = () => persist(undoRound(session));
@@ -93,7 +100,7 @@ export default function App() {
       setGameId(saved.gameId);
       setSession(saved);
       setActive(null);
-      setScreen('game');
+      setFlow('game');
     }
   };
 
@@ -104,67 +111,70 @@ export default function App() {
     setSession(done);
     setActive(null);
     setHistory(loadHistory());
-    setScreen('results');
+    setFlow('results');
   };
 
   const newGameSameGroup = () => {
-    // recomeça com o mesmo jogo; o Setup pré-preenche os jogadores do jogo anterior
     setGameId(session.gameId);
-    setScreen('setup');
+    setFlow('setup');
   };
 
   if (shared) return <SharedView data={shared} />;
 
+  let content = null;
+  if (flow === 'setup') {
+    content = (
+      <SetupScreen
+        gameId={gameId}
+        initialPlayers={session && session.gameId === gameId ? session.players : null}
+        onStart={startGame}
+        onBack={goHome}
+      />
+    );
+  } else if (flow === 'game' && session) {
+    content = (
+      <GameScreen
+        session={session}
+        onSubmitRound={submitRound}
+        onUndo={undo}
+        onFinish={finishGame}
+        onBack={goHome}
+        onShareLive={() => shareSessionLink(session)}
+      />
+    );
+  } else if (flow === 'results' && session) {
+    content = (
+      <ResultsScreen
+        session={session}
+        onNewGame={newGameSameGroup}
+        onHome={goHome}
+        onShare={() => shareResult(session)}
+        onShareLive={() => shareSessionLink(session)}
+      />
+    );
+  } else if (tab === 'historico') {
+    content = (
+      <HistoryScreen
+        history={history}
+        onShare={(s) => shareResult(s)}
+        onRemove={removeHistory}
+      />
+    );
+  } else if (tab === 'perfil') {
+    content = <ProfileScreen history={history} />;
+  } else {
+    content = (
+      <HomeScreen
+        onPickGame={pickGame}
+        activeSession={active}
+        onResume={resumeGame}
+      />
+    );
+  }
+
   return (
-    <>
-      {screen === 'home' && (
-        <HomeScreen
-          onPickGame={pickGame}
-          activeSession={active}
-          onResume={resumeGame}
-          historyCount={history.length}
-          onHistory={() => setScreen('history')}
-        />
-      )}
-
-      {screen === 'setup' && (
-        <SetupScreen
-          gameId={gameId}
-          initialPlayers={session && session.gameId === gameId ? session.players : null}
-          onStart={startGame}
-          onBack={goHome}
-        />
-      )}
-
-      {screen === 'game' && session && (
-        <GameScreen
-          session={session}
-          onSubmitRound={submitRound}
-          onUndo={undo}
-          onFinish={finishGame}
-          onBack={goHome}
-          onShareLive={() => shareSessionLink(session)}
-        />
-      )}
-
-      {screen === 'results' && session && (
-        <ResultsScreen
-          session={session}
-          onNewGame={newGameSameGroup}
-          onHome={goHome}
-          onShare={() => shareResult(session)}
-          onShareLive={() => shareSessionLink(session)}
-        />
-      )}
-
-      {screen === 'history' && (
-        <HistoryScreen
-          history={history}
-          onBack={goHome}
-          onShare={(s) => shareResult(s)}
-          onRemove={removeHistory}
-        />
-      )}
-    </>
+    <AppShell tab={tab} onTab={changeTab} showTabBar={flow === null}>
+      {content}
+    </AppShell>
   );
 }
