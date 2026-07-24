@@ -1,9 +1,20 @@
+// Separador Jogar: cabeçalho, cartão de continuar, fila horizontal de
+// recentes/favoritos (estilo Netflix) e grelha de todos os jogos. Tocar num
+// jogo abre o detalhe.
+
 import { listGames, getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
-import { Card, Eyebrow } from '../ui/components.jsx';
-import InstallBanner from '../ui/InstallBanner.jsx';
+import { recentGameIds } from '../core/favorites';
+import { Icon } from '../ui/icons.jsx';
 
-export default function HomeScreen({ onPickGame, activeSession, onResume }) {
+export default function HomeScreen({
+  onOpenDetail,
+  activeSession,
+  onResume,
+  favorites,
+  onToggleFav,
+  history,
+}) {
   const games = listGames();
 
   let resumeInfo = null;
@@ -13,49 +24,92 @@ export default function HomeScreen({ onPickGame, activeSession, onResume }) {
       const state = deriveState(activeSession, game);
       resumeInfo = {
         gameName: game.name,
+        suit: game.suit,
         players: activeSession.players.length,
         round: state.roundIndex + 1,
       };
     }
   }
 
+  // fila horizontal: favoritos primeiro, depois recentes (sem repetir)
+  const recent = recentGameIds(history, activeSession);
+  const railIds = [...favorites, ...recent].filter(
+    (id, i, arr) => arr.indexOf(id) === i && getGame(id),
+  );
+
   return (
     <>
-      <Eyebrow>Contas de jogo</Eyebrow>
-      <h1>Scorard</h1>
-      <p className="sub">Escolhe o jogo. As contas fazem-se sozinhas.</p>
-
-      <InstallBanner />
+      <header className="apphead">
+        <span className="wordmark">Scorard</span>
+        <span className="avatar">RF</span>
+      </header>
 
       {resumeInfo && (
+        <button
+          type="button"
+          className="continue-card"
+          onClick={onResume}
+        >
+          <span className="continue-live">
+            <Icon name="live" size={15} /> Continuar
+          </span>
+          <span className="continue-title">{resumeInfo.gameName}</span>
+          <span className="continue-sub">
+            {resumeInfo.players} jogadores · ronda {resumeInfo.round}
+          </span>
+        </button>
+      )}
+
+      {railIds.length > 0 && (
         <>
-          <Eyebrow style={{ marginBottom: 10 }}>Continuar</Eyebrow>
-          <Card className="row tappable" onClick={onResume} style={{ borderColor: 'var(--goldDim)' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 18, fontWeight: 700 }}>{resumeInfo.gameName}</div>
-              <div className="muted" style={{ fontSize: 14, marginTop: 3 }}>
-                {resumeInfo.players} jogadores · ronda {resumeInfo.round}
-              </div>
-            </div>
-            <div style={{ color: 'var(--gold)', fontSize: 30 }}>›</div>
-          </Card>
-          <div className="mt-lg" />
+          <div className="section-h">Recentes e favoritos</div>
+          <div className="rail">
+            {railIds.map((id) => {
+              const g = getGame(id);
+              const fav = favorites.includes(id);
+              return (
+                <button key={id} type="button" className="rail-tile" onClick={() => onOpenDetail(id)}>
+                  <span className={`rail-suit ${g.suit === '♥' ? 'copas' : ''}`}>{g.suit}</span>
+                  <span className="rail-name">{g.name}</span>
+                  {fav && (
+                    <span className="rail-star">
+                      <Icon name="star" size={13} filled />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </>
       )}
 
-      <Eyebrow style={{ marginBottom: 10 }}>Jogos</Eyebrow>
-      {games.map((g) => (
-        <Card key={g.id} className="row tappable" onClick={() => onPickGame(g.id)}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>{g.name}</div>
-            <div className="muted" style={{ fontSize: 14, marginTop: 3 }}>{g.description}</div>
-            <div style={{ color: 'var(--goldDim)', fontSize: 12, marginTop: 6, fontWeight: 600 }}>
-              {g.minPlayers}–{g.maxPlayers} jogadores
+      <div className="section-h">Todos os jogos</div>
+      <div className="game-grid">
+        {games.map((g) => {
+          const fav = favorites.includes(g.id);
+          return (
+            <div key={g.id} className="game-card" onClick={() => onOpenDetail(g.id)}>
+              <button
+                type="button"
+                className={`game-star ${fav ? 'on' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFav(g.id);
+                }}
+                aria-label={fav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                aria-pressed={fav}
+              >
+                <Icon name="star" size={18} filled={fav} />
+              </button>
+              <span className={`game-suit ${g.suit === '♥' ? 'copas' : ''}`}>{g.suit}</span>
+              <div className="game-name">{g.name}</div>
+              <div className="game-metaline">
+                {g.minPlayers}–{g.maxPlayers} jogadores · {g.difficulty}
+              </div>
             </div>
-          </div>
-          <div style={{ color: 'var(--gold)', fontSize: 30 }}>›</div>
-        </Card>
-      ))}
+          );
+        })}
+      </div>
 
       <p className="footer">Mais jogos em breve.</p>
     </>

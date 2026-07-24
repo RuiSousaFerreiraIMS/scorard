@@ -6,9 +6,12 @@ import GameScreen from './screens/GameScreen.jsx';
 import ResultsScreen from './screens/ResultsScreen.jsx';
 import HistoryScreen from './screens/HistoryScreen.jsx';
 import ProfileScreen from './screens/ProfileScreen.jsx';
+import GameDetailScreen from './screens/GameDetailScreen.jsx';
+import RulesScreen from './screens/RulesScreen.jsx';
 import SharedView from './screens/SharedView.jsx';
 import { getGame } from './core/gameRegistry';
 import { readShareHash } from './core/shareLink';
+import { loadFavorites, toggleFavorite } from './core/favorites';
 import {
   createSession,
   appendRound,
@@ -31,13 +34,15 @@ export default function App() {
   // e não arranca a app normal (não toca no storage do visitante).
   const [shared] = useState(() => readShareHash());
 
-  // Navegação: separador (tab) + fluxo de jogo (flow) sobreposto ao separador Jogar.
+  // Navegação: separador (tab) + fluxo (flow) sobreposto ao separador Jogar.
   const [tab, setTab] = useState('jogar'); // jogar | historico | perfil
-  const [flow, setFlow] = useState(null); // null | setup | game | results
+  const [flow, setFlow] = useState(null); // null | detail | rules | setup | game | results
   const [gameId, setGameId] = useState(null);
+  const [detailId, setDetailId] = useState(null); // jogo aberto no detalhe/regras
   const [session, setSession] = useState(null);
   const [active, setActive] = useState(null); // sessão retomável
   const [history, setHistory] = useState([]);
+  const [favorites, setFavorites] = useState(() => loadFavorites());
 
   // Carregar sessão ativa + histórico ao arrancar.
   useEffect(() => {
@@ -59,6 +64,12 @@ export default function App() {
   };
 
   const goHome = () => changeTab('jogar');
+
+  const openDetail = (id) => {
+    setDetailId(id);
+    setFlow('detail');
+  };
+  const toggleFav = (id) => setFavorites(toggleFavorite(id));
 
   const pickGame = (id) => {
     setGameId(id);
@@ -122,7 +133,22 @@ export default function App() {
   if (shared) return <SharedView data={shared} />;
 
   let content = null;
-  if (flow === 'setup') {
+  if (flow === 'detail') {
+    content = (
+      <GameDetailScreen
+        gameId={detailId}
+        isFav={favorites.includes(detailId)}
+        onToggleFav={toggleFav}
+        onStart={pickGame}
+        onRules={() => setFlow('rules')}
+        onBack={() => setFlow(null)}
+      />
+    );
+  } else if (flow === 'rules') {
+    content = (
+      <RulesScreen gameId={detailId} onBack={() => setFlow('detail')} onStart={pickGame} />
+    );
+  } else if (flow === 'setup') {
     content = (
       <SetupScreen
         gameId={gameId}
@@ -165,9 +191,12 @@ export default function App() {
   } else {
     content = (
       <HomeScreen
-        onPickGame={pickGame}
+        onOpenDetail={openDetail}
         activeSession={active}
         onResume={resumeGame}
+        favorites={favorites}
+        onToggleFav={toggleFav}
+        history={history}
       />
     );
   }

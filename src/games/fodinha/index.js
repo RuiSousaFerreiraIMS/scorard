@@ -24,8 +24,23 @@ const fodinha = {
   id: 'fodinha',
   name: 'Fodinha',
   description: 'Apostas por ronda, contas de dinheiro automáticas.',
+  suit: '♠',
   minPlayers: 2,
   maxPlayers: 20,
+  difficulty: 'Fácil',
+  longDescription:
+    'Um clássico de mesa: cada ronda vale um valor. Quem perde paga, e o dinheiro ' +
+    'divide-se por quem ganha. Se ninguém perder — ronda perfeita — o valor sobe. ' +
+    'Tu só marcas quem perdeu; as contas em euros fazem-se sozinhas.',
+  curiosity:
+    'Joga-se com o baralho a encolher e a crescer — 1, 2, 3, 4, 5 e outra vez até 1 ' +
+    'carta. É por isso que cada ronda tem um número de cartas diferente.',
+  rules: [
+    { h: 'Objetivo', p: 'Ganhar dinheiro ao longo das rondas. Não há fim fixo: termina quando quiserem.' },
+    { h: 'Cada ronda', p: 'Distribuem-se as cartas da ronda (1→5→1), aposta-se e joga-se a mão. No fim, marca-se quem perdeu.' },
+    { h: 'Contas', p: 'Quem perde paga o valor da ronda. O total pago divide-se pelos que ganharam.' },
+    { h: 'Ronda perfeita', p: 'Se ninguém perder, o valor da próxima ronda sobe pelo incremento combinado.' },
+  ],
   RoundInput,
 
   setupFields: [

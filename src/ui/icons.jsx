@@ -1,7 +1,7 @@
 // Ícones inline (SVG, currentColor). Sem dependências nem CDN — a PWA funciona
 // offline. Contorno fino, herdam a cor e o tamanho de quem os usa.
 
-export function Icon({ name, size = 24, strokeWidth = 1.8 }) {
+export function Icon({ name, size = 24, strokeWidth = 1.8, filled = false }) {
   const p = {
     width: size,
     height: size,
@@ -14,6 +14,12 @@ export function Icon({ name, size = 24, strokeWidth = 1.8 }) {
     'aria-hidden': true,
   };
   switch (name) {
+    case 'star':
+      return (
+        <svg {...p} fill={filled ? 'currentColor' : 'none'}>
+          <path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 17.9l-5.25 2.75 1-5.85L3.5 9.7l5.9-.9z" />
+        </svg>
+      );
     case 'jogar': // duas cartas sobrepostas
       return (
         <svg {...p}>

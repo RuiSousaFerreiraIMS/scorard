@@ -23,6 +23,8 @@ export function listGames() {
     description: g.description,
     minPlayers: g.minPlayers,
     maxPlayers: g.maxPlayers,
+    suit: g.suit,
+    difficulty: g.difficulty,
   }));
 }
 

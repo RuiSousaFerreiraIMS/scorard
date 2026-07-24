@@ -23,8 +23,26 @@ const sobeedesce = {
   id: 'sobeedesce',
   name: 'Sobe e Desce',
   description: 'Vazas, trunfos e multiplicadores. Tudo automático.',
+  suit: '♥',
   minPlayers: 4,
   maxPlayers: 5,
+  difficulty: 'Média',
+  longDescription:
+    'Jogo de vazas ao estilo sueca. Todos começam com 20 pontos e o objetivo é ' +
+    'chegar a 0. A cada ronda escolhe-se ou vira-se o trunfo, que define o ' +
+    'multiplicador. A app trata dos multiplicadores, das obrigatoriedades e da ' +
+    'conta final em euros.',
+  curiosity:
+    'O trunfo copas vale a dobrar, e "copas no escuro" — pedido antes de ver as ' +
+    'cartas todas — vale a triplicar. É aí que os jogos se ganham... ou se perdem.',
+  rules: [
+    { h: 'Objetivo', p: 'Todos começam com 20 pontos. Ganha quem chegar a 0 (ou abaixo) primeiro.' },
+    { h: 'Escolher ou virar', p: 'Um jogador por ronda escolhe o trunfo (arrisca mais) ou vira a carta (arrisca menos).' },
+    { h: 'Multiplicador', p: 'Trunfo normal ×1, copas ×2, copas no escuro ×3.' },
+    { h: 'Pontuação', p: 'Cada vaza feita tira vazas × multiplicador. Quem vai a jogo e falha, leva penalização.' },
+    { h: 'Obrigatoriedades', p: 'Com paus todos vão; quem escolhe vai sempre; com 5 pontos ou menos é obrigado; não se passa 3× seguidas.' },
+    { h: 'No fim', p: 'Os pontos que sobram convertem-se em dinheiro, ao valor por ponto combinado.' },
+  ],
   RoundInput,
 
   setupFields: [
