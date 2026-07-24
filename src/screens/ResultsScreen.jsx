@@ -11,7 +11,7 @@ export default function ResultsScreen({ session, onNewGame, onHome, onShare, onS
   return (
     <>
       <Eyebrow>Fim de jogo</Eyebrow>
-      <h2>Contas finais</h2>
+      <h1 style={{ margin: '4px 0 2px' }}>Contas finais</h1>
       <p className="sub">
         {game.name} · {rounds} {rounds === 1 ? 'ronda' : 'rondas'}
       </p>
@@ -20,7 +20,7 @@ export default function ResultsScreen({ session, onNewGame, onHome, onShare, onS
         const top = i === 0;
         return (
           <Card key={p.playerId} className={`row rrow ${top ? 'top' : ''}`}>
-            <span className={`rank ${top ? 'top' : ''}`}>{i + 1}</span>
+            <span className={`rank ${top ? 'top' : ''}`}>{top ? '★' : i + 1}</span>
             <span style={{ flex: 1 }}>
               <span className="rname">{p.name}</span>
               {p.detail && <span className="rdetail">{p.detail}</span>}
