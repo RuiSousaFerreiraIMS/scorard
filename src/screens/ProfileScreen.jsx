@@ -4,8 +4,11 @@
 import { getGame } from '../core/gameRegistry';
 import { Eyebrow, Card } from '../ui/components.jsx';
 import InstallBanner from '../ui/InstallBanner.jsx';
+import AuthPanel from './AuthPanel.jsx';
+import { useAuth } from '../core/useAuth';
 
 export default function ProfileScreen({ history }) {
+  const { user, ready, hasSupabase } = useAuth();
   const total = history.length;
 
   // contagem por jogo (estatística local simples)
@@ -25,6 +28,14 @@ export default function ProfileScreen({ history }) {
       <p className="sub">As tuas contas de jogo, num só sítio.</p>
 
       <InstallBanner />
+
+      {hasSupabase ? (
+        <>
+          <Eyebrow style={{ marginBottom: 10 }}>Conta</Eyebrow>
+          {ready ? <AuthPanel user={user} /> : <Card className="muted">A carregar…</Card>}
+          <div className="mt-lg" />
+        </>
+      ) : null}
 
       <div className="stat-grid">
         <div className="stat">
@@ -49,14 +60,18 @@ export default function ProfileScreen({ history }) {
         </>
       )}
 
-      <div className="mt-lg" />
-      <Card style={{ borderColor: 'var(--goldDim)' }}>
-        <div style={{ fontWeight: 700, marginBottom: 4 }}>Conta Scorard — em breve</div>
-        <div className="muted" style={{ fontSize: 14, lineHeight: 1.5 }}>
-          Vais poder guardar os teus jogos na cloud, ver estatísticas ao longo do tempo,
-          ter amigos e sessões ao vivo. Para já, tudo fica guardado neste telemóvel.
-        </div>
-      </Card>
+      {!hasSupabase && (
+        <>
+          <div className="mt-lg" />
+          <Card style={{ borderColor: 'var(--goldDim)' }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Conta Scorard — em breve</div>
+            <div className="muted" style={{ fontSize: 14, lineHeight: 1.5 }}>
+              Vais poder guardar os teus jogos na cloud, ver estatísticas ao longo do tempo,
+              ter amigos e sessões ao vivo. Para já, tudo fica guardado neste telemóvel.
+            </div>
+          </Card>
+        </>
+      )}
     </>
   );
 }
