@@ -42,6 +42,27 @@ Isto é o passo mais importante que só tu podes dar. É grátis. Demora ~10 min
 
 ---
 
+## 2b. Dois ajustes no Supabase para as contas funcionarem (importante)
+
+As contas já estão ligadas e no ar. Faltam **dois cliques** no painel do Supabase
+para o registo funcionar bem para os teus amigos:
+
+**A) Definir o endereço do site** (senão o email de confirmação aponta para o sítio errado)
+1. No Supabase: **Authentication** → **URL Configuration**.
+2. Em **Site URL** mete: `https://ruisousaferreiraims.github.io/scorard/`
+3. Em **Redirect URLs** carrega **Add URL** e mete o mesmo. Guarda.
+
+**B) Escolher se há confirmação por email** (agora está LIGADA)
+- **Authentication** → **Providers** → **Email**.
+- Se **deixares ligado "Confirm email"**: cada pessoa recebe um email e tem de
+  clicar para ativar a conta (mais seguro, mas um passo extra).
+- Se **desligares "Confirm email"**: a conta fica ativa logo ao registar (mais
+  simples para um grupo de amigos). Recomendo desligar para começar.
+- Diz-me qual preferes — não muda nada no código, é só a tua escolha no painel.
+
+> Testei a ligação: o projeto responde e a chave é válida. Só faltam estes ajustes
+> para o registo ficar redondo.
+
 ## 3. Decisões que preciso de ti (para as próximas fases)
 
 Quando voltarmos, responde a isto (podes já ir pensando):
