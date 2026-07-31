@@ -15,9 +15,12 @@
 import { formatEuro } from '../../core/format';
 import RoundInput from './RoundInput.jsx';
 
-const CARD_SEQUENCE = [1, 2, 3, 4, 5, 4, 3, 2, 1];
+// Sobe e desce: 1,2,3,4,5,4,3,2,1,2,3,4,5,... O ciclo que se repete tem 8 rondas
+// (1,2,3,4,5,4,3,2); o 1 seguinte é já o início do ciclo a seguir. Se o ciclo
+// tivesse 9, o 1 aparecia duas vezes seguidas na viragem.
+const CARD_CYCLE = [1, 2, 3, 4, 5, 4, 3, 2];
 function cardsForRound(roundIndex) {
-  return CARD_SEQUENCE[roundIndex % CARD_SEQUENCE.length];
+  return CARD_CYCLE[roundIndex % CARD_CYCLE.length];
 }
 
 const fodinha = {
@@ -119,5 +122,5 @@ const fodinha = {
   },
 };
 
-export const _internals = { cardsForRound, CARD_SEQUENCE };
+export const _internals = { cardsForRound, CARD_CYCLE };
 export default fodinha;

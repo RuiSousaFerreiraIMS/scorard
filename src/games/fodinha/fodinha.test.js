@@ -14,10 +14,17 @@ function money(state) {
 }
 
 describe('fodinha — contas de dinheiro', () => {
-  it('sequência de cartas 1,2,3,4,5,4,3,2,1', () => {
+  it('sequência de cartas sobe e desce: 1,2,3,4,5,4,3,2,1', () => {
     const seq = Array.from({ length: 9 }, (_, i) => _internals.cardsForRound(i));
     expect(seq).toEqual([1, 2, 3, 4, 5, 4, 3, 2, 1]);
-    expect(_internals.cardsForRound(9)).toBe(1); // dá a volta
+  });
+
+  it('depois do 1 volta a subir — nunca repete o 1', () => {
+    // rondas 9..17 (índices 8..16): 1, depois sobe outra vez até 5 e desce
+    const seq = Array.from({ length: 17 }, (_, i) => _internals.cardsForRound(i));
+    expect(seq).toEqual([1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 4, 3, 2, 1]);
+    // nunca há dois números iguais seguidos
+    for (let i = 1; i < seq.length; i++) expect(seq[i]).not.toBe(seq[i - 1]);
   });
 
   it('um perdedor paga o valor, o pote divide pelos vencedores', () => {

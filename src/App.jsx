@@ -9,9 +9,11 @@ import ProfileScreen from './screens/ProfileScreen.jsx';
 import GameDetailScreen from './screens/GameDetailScreen.jsx';
 import RulesScreen from './screens/RulesScreen.jsx';
 import SharedView from './screens/SharedView.jsx';
+import WelcomeScreen from './screens/WelcomeScreen.jsx';
 import { getGame } from './core/gameRegistry';
 import { readShareHash } from './core/shareLink';
 import { loadFavorites, toggleFavorite } from './core/favorites';
+import { useAuth } from './core/useAuth';
 import {
   createSession,
   appendRound,
@@ -43,6 +45,21 @@ export default function App() {
   const [active, setActive] = useState(null); // sessão retomável
   const [history, setHistory] = useState([]);
   const [favorites, setFavorites] = useState(() => loadFavorites());
+
+  // Conta: quem ainda não entrou vê o ecrã de boas-vindas, a não ser que tenha
+  // escolhido continuar sem conta.
+  const { user, ready: authReady, hasSupabase } = useAuth();
+  const [skippedAuth, setSkippedAuth] = useState(
+    () => localStorage.getItem('scorard:skippedAuth') === '1',
+  );
+  const skipAuth = () => {
+    try {
+      localStorage.setItem('scorard:skippedAuth', '1');
+    } catch {
+      /* ignora */
+    }
+    setSkippedAuth(true);
+  };
 
   // Carregar sessão ativa + histórico ao arrancar.
   useEffect(() => {
@@ -130,7 +147,13 @@ export default function App() {
     setFlow('setup');
   };
 
+  // Link de sessão partilhada: nunca pede conta a quem só quer acompanhar.
   if (shared) return <SharedView data={shared} />;
+
+  // Boas-vindas / conta, antes de entrar na app.
+  if (hasSupabase && authReady && !user && !skippedAuth) {
+    return <WelcomeScreen onSkip={skipAuth} />;
+  }
 
   let content = null;
   if (flow === 'detail') {
