@@ -135,6 +135,140 @@ create trigger on_auth_user_created
 Quando correres isto, avisa-me: eu ligo os favoritos e o histórico à conta (passam
 a seguir-te em qualquer telemóvel).
 
+## 2e. SEGUNDO bloco de SQL — amigos e sessões ao vivo
+
+Mesma coisa do 2c: **SQL Editor → New query → colar → Run**. Isto cria as tabelas
+para os **amigos** (Fase 3) e para a **sessão ao vivo com comentários** (Fase 4).
+Avisa-me quando correres e eu implemento as duas.
+
+```sql
+-- ---------- AMIGOS ----------
+-- Pedido de amizade: de quem parte (user_id) para quem recebe (friend_id).
+create table if not exists public.friendships (
+  user_id uuid references auth.users on delete cascade not null,
+  friend_id uuid references auth.users on delete cascade not null,
+  status text not null default 'pending' check (status in ('pending','accepted')),
+  created_at timestamptz default now(),
+  primary key (user_id, friend_id),
+  check (user_id <> friend_id)
+);
+
+alter table public.friendships enable row level security;
+
+-- Vejo as amizades onde eu entro (as que enviei e as que recebi)
+create policy "ver amizades minhas" on public.friendships
+  for select using (auth.uid() = user_id or auth.uid() = friend_id);
+-- Só posso criar pedidos em meu nome
+create policy "enviar pedido" on public.friendships
+  for insert with check (auth.uid() = user_id);
+-- Quem recebe pode aceitar; qualquer um dos dois pode remover
+create policy "aceitar pedido" on public.friendships
+  for update using (auth.uid() = friend_id);
+create policy "remover amizade" on public.friendships
+  for delete using (auth.uid() = user_id or auth.uid() = friend_id);
+
+-- Para encontrar amigos por email é preciso poder procurar perfis.
+-- Guardamos o email no perfil (só para pesquisa) e deixamos ver os campos
+-- públicos de qualquer perfil — nome e email, nada mais.
+alter table public.profiles add column if not exists email text;
+
+create policy "procurar perfis" on public.profiles
+  for select using (true);
+
+-- preencher o email nos perfis que já existem
+update public.profiles p
+  set email = u.email
+  from auth.users u
+  where u.id = p.id and p.email is null;
+
+-- e nos novos (substitui a função do bloco anterior)
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (id, display_name, email)
+  values (new.id, split_part(new.email, '@', 1), new.email)
+  on conflict (id) do update set email = excluded.email;
+  return new;
+end; $$;
+
+-- ---------- SESSÃO AO VIVO ----------
+-- A sessão ao vivo guarda a lista de rondas (event sourcing, como na app).
+create table if not exists public.live_sessions (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users on delete cascade not null,
+  game_id text not null,
+  players jsonb not null,
+  setup jsonb not null,
+  rounds jsonb not null default '[]'::jsonb,
+  finished boolean not null default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Quem pode ESCREVER o resultado (o dono + jogadores com conta convidados)
+create table if not exists public.live_players (
+  session_id uuid references public.live_sessions on delete cascade not null,
+  user_id uuid references auth.users on delete cascade not null,
+  created_at timestamptz default now(),
+  primary key (session_id, user_id)
+);
+
+create table if not exists public.live_comments (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid references public.live_sessions on delete cascade not null,
+  user_id uuid references auth.users on delete set null,
+  author_name text not null,
+  body text not null check (char_length(body) between 1 and 500),
+  created_at timestamptz default now()
+);
+
+alter table public.live_sessions enable row level security;
+alter table public.live_players  enable row level security;
+alter table public.live_comments enable row level security;
+
+-- Qualquer pessoa com o link vê a sessão (é esse o objetivo: acompanhar)
+create policy "ver sessao ao vivo" on public.live_sessions for select using (true);
+create policy "ver jogadores"      on public.live_players  for select using (true);
+create policy "ver comentarios"    on public.live_comments for select using (true);
+
+-- Só o dono cria e apaga
+create policy "criar sessao" on public.live_sessions
+  for insert with check (auth.uid() = owner_id);
+create policy "apagar sessao" on public.live_sessions
+  for delete using (auth.uid() = owner_id);
+
+-- Escrever o resultado: dono OU jogador convidado
+create policy "editar resultado" on public.live_sessions
+  for update using (
+    auth.uid() = owner_id
+    or exists (
+      select 1 from public.live_players lp
+      where lp.session_id = id and lp.user_id = auth.uid()
+    )
+  );
+
+-- Só o dono convida/remove jogadores
+create policy "gerir jogadores" on public.live_players
+  for all using (
+    exists (select 1 from public.live_sessions s
+            where s.id = session_id and s.owner_id = auth.uid())
+  );
+
+-- Comentar: qualquer pessoa autenticada, em nome próprio
+create policy "comentar" on public.live_comments
+  for insert with check (auth.uid() = user_id);
+create policy "apagar comentario proprio" on public.live_comments
+  for delete using (auth.uid() = user_id);
+
+-- Realtime: enviar as alterações para quem está a ver
+alter publication supabase_realtime add table public.live_sessions;
+alter publication supabase_realtime add table public.live_comments;
+```
+
+> Nota de privacidade: quem tiver o link vê a sessão (nomes e pontuações) — é o
+> que faz sentido para "acompanhar o jogo". Alterar o resultado é que fica
+> reservado ao dono e aos jogadores convidados.
+
 ## 2d. Botão de pagar (MB WAY) — o que é possível, honestamente
 
 Pedido dos jogadores: um botão para pagar no fim do jogo. O que dá e o que não dá:
