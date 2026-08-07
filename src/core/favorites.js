@@ -11,6 +11,15 @@ export function loadFavorites() {
   }
 }
 
+// Substitui a lista toda (usado quando a conta traz os favoritos da cloud).
+export function saveFavorites(list) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(Array.isArray(list) ? list : []));
+  } catch {
+    /* ignora */
+  }
+}
+
 export function isFavorite(id, favs = loadFavorites()) {
   return favs.includes(id);
 }

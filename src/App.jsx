@@ -12,8 +12,9 @@ import SharedView from './screens/SharedView.jsx';
 import WelcomeScreen from './screens/WelcomeScreen.jsx';
 import { getGame } from './core/gameRegistry';
 import { readShareHash } from './core/shareLink';
-import { loadFavorites, toggleFavorite } from './core/favorites';
+import { loadFavorites, toggleFavorite, saveFavorites } from './core/favorites';
 import { useAuth } from './core/useAuth';
+import { syncOnLogin, pushFavorite, dropFavorite, pushSession, dropSession } from './core/cloud';
 import {
   createSession,
   appendRound,
@@ -28,6 +29,7 @@ import {
   loadHistory,
   addToHistory,
   removeFromHistory,
+  saveHistory,
 } from './core/storage';
 import { shareResult, shareSessionLink } from './core/share';
 
@@ -61,6 +63,42 @@ export default function App() {
     setSkippedAuth(true);
   };
 
+  // Ao entrar na conta: juntar o que está no telemóvel com o que está na cloud.
+  // Se a cloud não responder, fica tudo como está (não se perde nada).
+  useEffect(() => {
+    if (!user) return undefined;
+    let alive = true;
+    (async () => {
+      const res = await syncOnLogin(user.id, loadFavorites(), loadHistory());
+      if (!alive || !res.ok) return;
+      setFavorites(res.favorites);
+      saveFavorites(res.favorites);
+      setHistory(res.history);
+      saveHistory(res.history);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
+
+  // Arquivar um jogo terminado: telemóvel primeiro, cloud a seguir.
+  const archive = async (done) => {
+    addToHistory(done);
+    clearActive();
+    setSession(done);
+    setActive(null);
+    setHistory(loadHistory());
+    setFlow('results');
+
+    if (!user) return;
+    const saved = await pushSession(user.id, done);
+    if (!saved) return; // sem rede: fica local, sobe no próximo login
+    // passa a usar o registo da cloud (id uuid), para apagar funcionar dos dois lados
+    const merged = loadHistory().map((s) => (s.id === done.id ? saved : s));
+    saveHistory(merged);
+    setHistory(merged);
+  };
+
   // Carregar sessão ativa + histórico ao arrancar.
   useEffect(() => {
     const saved = loadActive();
@@ -86,7 +124,14 @@ export default function App() {
     setDetailId(id);
     setFlow('detail');
   };
-  const toggleFav = (id) => setFavorites(toggleFavorite(id));
+  const toggleFav = (id) => {
+    const next = toggleFavorite(id);
+    setFavorites(next);
+    if (user) {
+      if (next.includes(id)) pushFavorite(user.id, id);
+      else dropFavorite(user.id, id);
+    }
+  };
 
   const pickGame = (id) => {
     setGameId(id);
@@ -106,13 +151,7 @@ export default function App() {
     // fim de jogo automático (ex: Sobe e Desce chega a 0)
     const game = getGame(next.gameId);
     if (game.isFinished(deriveState(next, game))) {
-      const done = finishSession(next);
-      addToHistory(done);
-      clearActive();
-      setSession(done);
-      setActive(null);
-      setHistory(loadHistory());
-      setFlow('results');
+      archive(finishSession(next));
     }
   };
   const undo = () => persist(undoRound(session));
@@ -120,6 +159,7 @@ export default function App() {
   const removeHistory = (id) => {
     removeFromHistory(id);
     setHistory(loadHistory());
+    if (user) dropSession(user.id, id);
   };
 
   const resumeGame = () => {
@@ -132,15 +172,7 @@ export default function App() {
     }
   };
 
-  const finishGame = () => {
-    const done = finishSession(session);
-    addToHistory(done);
-    clearActive();
-    setSession(done);
-    setActive(null);
-    setHistory(loadHistory());
-    setFlow('results');
-  };
+  const finishGame = () => archive(finishSession(session));
 
   const newGameSameGroup = () => {
     setGameId(session.gameId);

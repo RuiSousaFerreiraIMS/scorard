@@ -84,3 +84,8 @@ export function removeFromHistory(id) {
 export function clearHistory() {
   remove(HISTORY_KEY);
 }
+
+// Substitui o histórico todo (usado quando a conta traz a lista da cloud).
+export function saveHistory(history) {
+  write(HISTORY_KEY, Array.isArray(history) ? history : []);
+}
