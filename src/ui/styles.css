@@ -395,6 +395,84 @@ body {
   margin: 0;
 }
 
+/* Amigos */
+.friendrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.friendavatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.friendname {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+}
+.friendmeta {
+  color: var(--textDim);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.friendbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--gold);
+  color: #0f1714;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.friendbtn.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--textDim);
+  font-size: 18px;
+  padding: 4px 10px;
+}
+.friendbtn:disabled {
+  opacity: 0.5;
+}
+.friendchip {
+  flex: 0 0 auto;
+  background: var(--surfaceAlt);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 14px;
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.friendtag {
+  color: var(--textDim);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
 /* Ranking de sempre (Perfil) */
 .rankrow {
   display: flex;

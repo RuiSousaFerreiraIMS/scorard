@@ -6,6 +6,7 @@ import GameScreen from './screens/GameScreen.jsx';
 import ResultsScreen from './screens/ResultsScreen.jsx';
 import HistoryScreen from './screens/HistoryScreen.jsx';
 import ProfileScreen from './screens/ProfileScreen.jsx';
+import FriendsScreen from './screens/FriendsScreen.jsx';
 import GameDetailScreen from './screens/GameDetailScreen.jsx';
 import RulesScreen from './screens/RulesScreen.jsx';
 import SharedView from './screens/SharedView.jsx';
@@ -15,6 +16,7 @@ import { readShareHash } from './core/shareLink';
 import { loadFavorites, toggleFavorite, saveFavorites } from './core/favorites';
 import { useAuth } from './core/useAuth';
 import { syncOnLogin, pushFavorite, dropFavorite, pushSession, dropSession } from './core/cloud';
+import { ensureProfile } from './core/friends';
 import {
   createSession,
   appendRound,
@@ -69,6 +71,7 @@ export default function App() {
     if (!user) return undefined;
     let alive = true;
     (async () => {
+      await ensureProfile(user);
       const res = await syncOnLogin(user.id, loadFavorites(), loadHistory());
       if (!alive || !res.ok) return;
       setFavorites(res.favorites);
@@ -210,6 +213,7 @@ export default function App() {
         initialPlayers={session && session.gameId === gameId ? session.players : null}
         onStart={startGame}
         onBack={goHome}
+        user={user}
       />
     );
   } else if (flow === 'game' && session) {
@@ -241,6 +245,8 @@ export default function App() {
         onRemove={removeHistory}
       />
     );
+  } else if (tab === 'amigos' && user) {
+    content = <FriendsScreen user={user} />;
   } else if (tab === 'perfil') {
     content = <ProfileScreen history={history} />;
   } else {
@@ -257,7 +263,7 @@ export default function App() {
   }
 
   return (
-    <AppShell tab={tab} onTab={changeTab} showTabBar={flow === null}>
+    <AppShell tab={tab} onTab={changeTab} showTabBar={flow === null} showFriends={!!user}>
       {content}
     </AppShell>
   );

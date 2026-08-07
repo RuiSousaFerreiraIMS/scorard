@@ -4,14 +4,21 @@
 
 import { Icon } from './icons.jsx';
 
-const TABS = [
+const BASE_TABS = [
   { key: 'jogar', label: 'Jogar', icon: 'jogar' },
   { key: 'historico', label: 'Histórico', icon: 'historico' },
   { key: 'perfil', label: 'Perfil', icon: 'perfil' },
 ];
 
-export default function AppShell({ tab, onTab, showTabBar, children }) {
+// O separador Amigos só aparece com sessão iniciada — sem conta não há amigos.
+const FRIENDS_TAB = { key: 'amigos', label: 'Amigos', icon: 'amigos' };
+
+export default function AppShell({ tab, onTab, showTabBar, showFriends, children }) {
   if (!showTabBar) return children;
+
+  const TABS = showFriends
+    ? [BASE_TABS[0], BASE_TABS[1], FRIENDS_TAB, BASE_TABS[2]]
+    : BASE_TABS;
 
   return (
     <>
