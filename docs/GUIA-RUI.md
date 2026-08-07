@@ -63,6 +63,102 @@ para o registo funcionar bem para os teus amigos:
 > Testei a ligação: o projeto responde e a chave é válida. Só faltam estes ajustes
 > para o registo ficar redondo.
 
+## 2c. Colar o SQL das tabelas (para os jogos irem para a conta)
+
+**Porque tens de ser tu:** eu consigo falar com o Supabase com a chave *pública*
+(criar contas, entrar) — mas **criar tabelas exige a chave de administrador**, que
+tu nunca me deves dar (quem a tiver controla a base de dados toda). Por isso o
+desenho é este: eu escrevo o SQL, tu colas. Leva 30 segundos e é uma vez só.
+
+**Como:** Supabase → menu **SQL Editor** → **New query** → cola o bloco abaixo →
+botão **Run**. Deve aparecer "Success".
+
+```sql
+-- Perfis (um por conta)
+create table if not exists public.profiles (
+  id uuid primary key references auth.users on delete cascade,
+  display_name text,
+  created_at timestamptz default now()
+);
+
+-- Jogos favoritos
+create table if not exists public.favorites (
+  user_id uuid references auth.users on delete cascade,
+  game_id text not null,
+  created_at timestamptz default now(),
+  primary key (user_id, game_id)
+);
+
+-- Jogos terminados (o histórico, guardado na conta)
+create table if not exists public.sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users on delete cascade not null,
+  game_id text not null,
+  players jsonb not null,
+  setup jsonb not null,
+  rounds jsonb not null,
+  started_at timestamptz,
+  finished_at timestamptz,
+  created_at timestamptz default now()
+);
+
+-- Segurança: cada pessoa só vê e mexe no que é dela
+alter table public.profiles  enable row level security;
+alter table public.favorites enable row level security;
+alter table public.sessions  enable row level security;
+
+create policy "perfil proprio" on public.profiles
+  for all using (auth.uid() = id) with check (auth.uid() = id);
+
+create policy "favoritos proprios" on public.favorites
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create policy "sessoes proprias" on public.sessions
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Criar o perfil automaticamente quando alguém se regista
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (new.id, split_part(new.email, '@', 1))
+  on conflict (id) do nothing;
+  return new;
+end; $$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+```
+
+Quando correres isto, avisa-me: eu ligo os favoritos e o histórico à conta (passam
+a seguir-te em qualquer telemóvel).
+
+## 2d. Botão de pagar (MB WAY) — o que é possível, honestamente
+
+Pedido dos jogadores: um botão para pagar no fim do jogo. O que dá e o que não dá:
+
+**Não dá (de graça):** integrar pagamentos a sério dentro da app. O MB WAY não tem
+uma forma pública de um site pedir dinheiro a alguém. Para isso é preciso um
+contrato de comerciante com a SIBS (ou Stripe/etc.), que envolve empresa, taxas por
+transação e verificação. Fica fora do orçamento zero — e para um jogo entre amigos
+seria exagero.
+
+**Dá, e é quase tão útil:** a app resolve a parte chata, que são as **contas**:
+
+1. **Acerto de contas** no fim: em vez de "cada um está a +3,40 / −1,20 / …", a app
+   calcula **quem paga a quem**, com o **mínimo de transferências** possível
+   (ex: em vez de 6 transferências, só 2: "Bea → Rui 3,40 €", "Caz → Rui 1,20 €").
+2. **Número de telemóvel** opcional em cada jogador (guardado só no telemóvel de
+   quem marca, ou na conta). Aparece ao lado de quem recebe.
+3. **Botão "Enviar acerto"** que manda tudo para o WhatsApp do grupo já escrito:
+   quem paga, a quem, quanto e o número para o MB WAY. Cada um abre o MB WAY e
+   paga em 5 segundos.
+
+Ou seja: a app não move dinheiro (nem deve), mas tira todo o trabalho de perceber
+quem deve a quem. Diz-me se queres isto e eu implemento.
+
 ## 3. Decisões que preciso de ti (para as próximas fases)
 
 Quando voltarmos, responde a isto (podes já ir pensando):
