@@ -395,6 +395,39 @@ body {
   margin: 0;
 }
 
+/* Ranking de sempre (Perfil) */
+.rankrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.rankrow.top {
+  border-color: var(--gold);
+  background: var(--surfaceAlt);
+}
+.rankname {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+}
+.rankmeta {
+  color: var(--textDim);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.rankmoney {
+  font-size: 16px;
+  font-weight: 800;
+}
+
 /* Acerto de contas */
 .settle-row {
   display: flex;
@@ -421,6 +454,21 @@ body {
   font-weight: 600;
   color: var(--pos);
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.phonebtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--textDim);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline dotted;
 }
 .settle-amt {
   font-size: 16px;

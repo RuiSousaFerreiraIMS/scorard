@@ -2,13 +2,16 @@
 // transferências, e um botão para mandar tudo escrito para o grupo.
 // A app não move dinheiro — só tira o trabalho de perceber quem deve a quem.
 
+import { useState } from 'react';
 import { getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
 import { settleUp, buildSettleText } from '../core/settle';
+import { loadPhones, setPhone } from '../core/phones';
 import { Eyebrow } from './components.jsx';
 import { Icon } from './icons.jsx';
 
 export default function Settlement({ session }) {
+  const [phones, setPhones] = useState(() => loadPhones());
   const game = getGame(session.gameId);
   if (!game || typeof game.getSettlement !== 'function') return null;
 
@@ -18,8 +21,21 @@ export default function Settlement({ session }) {
 
   const transfers = settleUp(entries);
 
+  // os números estão guardados por nome; o texto precisa deles por id
+  const phonesById = {};
+  for (const t of transfers) {
+    if (phones[t.toName]) phonesById[t.to] = phones[t.toName];
+  }
+
+  const askPhone = (name) => {
+    const current = phones[name] || '';
+    const v = window.prompt(`Número de telemóvel do/a ${name} (para MB WAY):`, current);
+    if (v === null) return; // cancelou
+    setPhones(setPhone(name, v));
+  };
+
   const share = async () => {
-    const text = buildSettleText(transfers);
+    const text = buildSettleText(transfers, phonesById);
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Scorard · acerto de contas', text });
@@ -60,7 +76,17 @@ export default function Settlement({ session }) {
               <span className="settle-arrow" aria-label="paga a">
                 <Icon name="chevron" size={16} />
               </span>
-              <span className="settle-to">{t.toName}</span>
+              <span className="settle-to">
+                {t.toName}
+                <button
+                  type="button"
+                  className="phonebtn"
+                  onClick={() => askPhone(t.toName)}
+                  title="Número para MB WAY"
+                >
+                  {phones[t.toName] || '+ número'}
+                </button>
+              </span>
               <span className="settle-amt">{t.amount.toFixed(2)} €</span>
             </div>
           ))}

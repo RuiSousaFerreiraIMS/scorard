@@ -1,7 +1,7 @@
 // Separador Perfil. Fase 0: identidade + instalar + estatísticas locais simples
 // + teaser da conta (que fica real na Fase 1). Conteúdo real, não placeholder.
 
-import { getGame } from '../core/gameRegistry';
+import { computeStats } from '../core/stats';
 import { Eyebrow, Card } from '../ui/components.jsx';
 import InstallBanner from '../ui/InstallBanner.jsx';
 import AuthPanel from './AuthPanel.jsx';
@@ -9,17 +9,8 @@ import { useAuth } from '../core/useAuth';
 
 export default function ProfileScreen({ history }) {
   const { user, ready, hasSupabase } = useAuth();
-  const total = history.length;
-
-  // contagem por jogo (estatística local simples)
-  const byGame = {};
-  for (const s of history) {
-    byGame[s.gameId] = (byGame[s.gameId] || 0) + 1;
-  }
-  const perGame = Object.entries(byGame).map(([id, n]) => ({
-    name: getGame(id)?.name || id,
-    n,
-  }));
+  const stats = computeStats(history);
+  const total = stats.totalGames;
 
   return (
     <>
@@ -40,21 +31,52 @@ export default function ProfileScreen({ history }) {
       <div className="stat-grid">
         <div className="stat">
           <div className="stat-num">{total}</div>
-          <div className="stat-label">jogos guardados</div>
+          <div className="stat-label">{total === 1 ? 'jogo guardado' : 'jogos guardados'}</div>
         </div>
         <div className="stat">
-          <div className="stat-num">{perGame.length}</div>
-          <div className="stat-label">jogos diferentes</div>
+          <div className="stat-num">{stats.players.length}</div>
+          <div className="stat-label">jogadores</div>
         </div>
       </div>
 
-      {perGame.length > 0 && (
+      {total === 0 && (
+        <div className="settle-none" style={{ marginTop: 4 }}>
+          Ainda sem jogos guardados. Termina um jogo e as estatísticas aparecem aqui.
+        </div>
+      )}
+
+      {stats.players.length > 0 && (
         <>
-          <Eyebrow style={{ marginTop: 8, marginBottom: 10 }}>Por jogo</Eyebrow>
-          {perGame.map((g) => (
-            <div key={g.name} className="listrow">
+          <Eyebrow style={{ marginTop: 18, marginBottom: 10 }}>Ranking de sempre</Eyebrow>
+          <div className="hint" style={{ marginBottom: 10 }}>
+            Somando todos os jogos guardados.
+          </div>
+          {stats.players.map((p, i) => (
+            <div key={p.name} className={`rankrow ${i === 0 ? 'top' : ''}`}>
+              <span className={`rank ${i === 0 ? 'top' : ''}`}>{i === 0 ? '★' : i + 1}</span>
+              <span className="rankname">
+                {p.name}
+                <span className="rankmeta">
+                  {p.games} {p.games === 1 ? 'jogo' : 'jogos'} · {p.wins}{' '}
+                  {p.wins === 1 ? 'vitória' : 'vitórias'}
+                </span>
+              </span>
+              <span className={`rankmoney ${p.money > 0 ? 'pos' : p.money < 0 ? 'neg' : 'dim'}`}>
+                {p.money > 0 ? '+' : ''}
+                {p.money.toFixed(2)} €
+              </span>
+            </div>
+          ))}
+        </>
+      )}
+
+      {stats.byGame.length > 0 && (
+        <>
+          <Eyebrow style={{ marginTop: 18, marginBottom: 10 }}>Por jogo</Eyebrow>
+          {stats.byGame.map((g) => (
+            <div key={g.gameId} className="listrow">
               <span>{g.name}</span>
-              <span className="muted">{g.n}</span>
+              <span className="muted">{g.count}</span>
             </div>
           ))}
         </>
