@@ -395,6 +395,73 @@ body {
   margin: 0;
 }
 
+/* Sessão ao vivo */
+.livebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surfaceAlt);
+  border: 1px solid var(--goldDim);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.livedot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--pos);
+  flex-shrink: 0;
+  animation: livepulse 1.8s ease-in-out infinite;
+}
+@keyframes livepulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .livedot { animation: none; }
+}
+.livetag {
+  margin-left: auto;
+  background: var(--gold);
+  color: #0f1714;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.comments {
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+.comment {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  margin-bottom: 7px;
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.comment-who {
+  color: var(--gold);
+  font-weight: 700;
+  margin-right: 7px;
+}
+.comment-body {
+  overflow-wrap: anywhere;
+}
+.commentbox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 /* Amigos */
 .friendrow {
   display: flex;

@@ -22,6 +22,32 @@ export function buildResultText(session) {
   return lines.join('\n');
 }
 
+// Partilha um URL: usa a partilha do telemóvel, senão copia, senão mostra.
+export async function shareUrl(url, text = 'Acompanha o jogo na Scorard') {
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Scorard', text, url });
+      return 'shared';
+    }
+  } catch {
+    /* cancelou → copia */
+  }
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+      return 'copied';
+    }
+  } catch {
+    /* ignora */
+  }
+  try {
+    window.prompt('Copia o link:', url);
+  } catch {
+    /* ignora */
+  }
+  return 'prompt';
+}
+
 // Partilha um link só-de-leitura para acompanhar a sessão (vista + promoção).
 export async function shareSessionLink(session) {
   const game = getGame(session.gameId);

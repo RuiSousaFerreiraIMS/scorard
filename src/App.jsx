@@ -11,6 +11,9 @@ import GameDetailScreen from './screens/GameDetailScreen.jsx';
 import RulesScreen from './screens/RulesScreen.jsx';
 import SharedView from './screens/SharedView.jsx';
 import WelcomeScreen from './screens/WelcomeScreen.jsx';
+import LiveView from './screens/LiveView.jsx';
+import { readLiveHash, createLive, liveUrl, pushRounds, invitePlayer } from './core/live';
+import { loadFriends } from './core/friends';
 import { getGame } from './core/gameRegistry';
 import { readShareHash } from './core/shareLink';
 import { loadFavorites, toggleFavorite, saveFavorites } from './core/favorites';
@@ -33,12 +36,13 @@ import {
   removeFromHistory,
   saveHistory,
 } from './core/storage';
-import { shareResult, shareSessionLink } from './core/share';
+import { shareResult, shareSessionLink, shareUrl } from './core/share';
 
 export default function App() {
   // Se o URL trouxer uma sessão partilhada (#s=...), mostra a vista só-de-leitura
   // e não arranca a app normal (não toca no storage do visitante).
   const [shared] = useState(() => readShareHash());
+  const [liveId] = useState(() => readLiveHash());
 
   // Navegação: separador (tab) + fluxo (flow) sobreposto ao separador Jogar.
   const [tab, setTab] = useState('jogar'); // jogar | historico | perfil
@@ -151,13 +155,63 @@ export default function App() {
   const submitRound = (input) => {
     const next = appendRound(session, input);
     persist(next);
-    // fim de jogo automático (ex: Sobe e Desce chega a 0)
     const game = getGame(next.gameId);
-    if (game.isFinished(deriveState(next, game))) {
-      archive(finishSession(next));
-    }
+    const done = game.isFinished(deriveState(next, game));
+    // se o jogo está ao vivo, cada ronda segue para quem está a acompanhar
+    if (next.liveId) pushRounds(next.liveId, next.rounds, done);
+    // fim de jogo automático (ex: Sobe e Desce chega a 0)
+    if (done) archive(finishSession(next));
   };
-  const undo = () => persist(undoRound(session));
+
+  const undo = () => {
+    const next = undoRound(session);
+    persist(next);
+    if (next.liveId) pushRounds(next.liveId, next.rounds, false);
+  };
+
+  // Pôr o jogo atual ao vivo: publica e partilha o link para acompanhar.
+  const goLive = async () => {
+    const live = await createLive(user, session);
+    if (!live) {
+      window.alert('Não deu para pôr ao vivo. Verifica a ligação e tenta outra vez.');
+      return;
+    }
+    // guardar a ligação: a partir daqui cada ronda sobe sozinha
+    persist({ ...session, liveId: live.id });
+
+    // Amigos que estão a jogar podem marcar o resultado, não só assistir.
+    // (O nome do jogador tem de bater certo com o nome do amigo.)
+    const data = await loadFriends(user.id);
+    if (data) {
+      const names = new Set(session.players.map((p) => p.name));
+      await Promise.all(
+        data.friends
+          .filter((f) => names.has(f.display_name))
+          .map((f) => invitePlayer(live.id, f.id)),
+      );
+    }
+
+    const url = liveUrl(live.id);
+    const text = 'Acompanha o nosso jogo ao vivo na Scorard 📡';
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Scorard ao vivo', text, url });
+        return;
+      }
+    } catch {
+      /* cancelou → copia */
+    }
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        window.alert('Link ao vivo copiado! Manda ao grupo.');
+        return;
+      }
+    } catch {
+      /* ignora */
+    }
+    window.prompt('Copia o link ao vivo:', url);
+  };
 
   const removeHistory = (id) => {
     removeFromHistory(id);
@@ -182,7 +236,8 @@ export default function App() {
     setFlow('setup');
   };
 
-  // Link de sessão partilhada: nunca pede conta a quem só quer acompanhar.
+  // Links de sessão: nunca pedem conta a quem só quer acompanhar.
+  if (liveId) return <LiveView id={liveId} />;
   if (shared) return <SharedView data={shared} />;
 
   // Boas-vindas / conta, antes de entrar na app.
@@ -225,6 +280,8 @@ export default function App() {
         onFinish={finishGame}
         onBack={goHome}
         onShareLive={() => shareSessionLink(session)}
+        onGoLive={user ? goLive : null}
+        onShareLiveUrl={() => shareUrl(liveUrl(session.liveId))}
       />
     );
   } else if (flow === 'results' && session) {
