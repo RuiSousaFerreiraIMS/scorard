@@ -157,6 +157,27 @@ describe('sobeedesce — conta final em €', () => {
     expect(st[0].playerId).toBe('a');
   });
 
+  it('getSettlement: o vencedor recebe o que os outros pagam (fecha a zero)', () => {
+    const s = state0();
+    s.scores[0].pts = 0; // a — vencedor
+    s.scores[1].pts = 8;
+    s.scores[2].pts = 5;
+    s.scores[3].pts = 12;
+    s.finished = true;
+    s.winnerId = 'a';
+    const st = sobeedesce.getSettlement(s);
+    const by = Object.fromEntries(st.map((x) => [x.playerId, x.amount]));
+    expect(by.b).toBeCloseTo(-1.6);
+    expect(by.c).toBeCloseTo(-1.0);
+    expect(by.d).toBeCloseTo(-2.4);
+    expect(by.a).toBeCloseTo(5.0);
+    expect(st.reduce((t, x) => t + x.amount, 0)).toBeCloseTo(0);
+  });
+
+  it('getSettlement: jogo a decorrer não gera acerto', () => {
+    expect(sobeedesce.getSettlement(state0())).toEqual([]);
+  });
+
   it('empate a 0: quem não foi o primeiro não paga', () => {
     const s = state0();
     s.scores[0].pts = 0; // a

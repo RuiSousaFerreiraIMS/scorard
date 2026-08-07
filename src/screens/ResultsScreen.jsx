@@ -1,6 +1,7 @@
 import { getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
 import { Eyebrow, Card, Button, toneClass } from '../ui/components.jsx';
+import Settlement from '../ui/Settlement.jsx';
 
 export default function ResultsScreen({ session, onNewGame, onHome, onShare, onShareLive }) {
   const game = getGame(session.gameId);
@@ -29,6 +30,8 @@ export default function ResultsScreen({ session, onNewGame, onHome, onShare, onS
           </Card>
         );
       })}
+
+      <Settlement session={session} />
 
       <div className="mt-xl" />
       <Button onClick={onShare} variant="ghost">

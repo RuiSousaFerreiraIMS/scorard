@@ -114,6 +114,15 @@ const fodinha = {
       }));
   },
 
+  // Saldos em euros para o acerto de contas (+ recebe, − paga).
+  getSettlement(state) {
+    return state.balances.map((b) => ({
+      playerId: b.playerId,
+      name: b.name,
+      amount: b.money,
+    }));
+  },
+
   // Resumo de uma ronda para o histórico (comum a todos os jogos).
   roundSummary(input) {
     const n = (input.loserIds || []).length;

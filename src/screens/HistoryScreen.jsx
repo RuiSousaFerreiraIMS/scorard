@@ -3,6 +3,7 @@ import { getGame } from '../core/gameRegistry';
 import { deriveState, deriveStepStates } from '../core/session';
 import { formatDateTime } from '../core/format';
 import { Eyebrow, Card, Button, BackButton, toneClass } from '../ui/components.jsx';
+import Settlement from '../ui/Settlement.jsx';
 
 // Histórico comum a todos os jogos: lista de sessões terminadas + detalhe
 // ronda-a-ronda (derivado dos rounds, sem código específico do jogo).
@@ -93,6 +94,8 @@ function Detail({ session, onBack, onShare, onRemove }) {
           <span className={`rmoney ${toneClass(p)}`}>{p.scoreLabel}</span>
         </Card>
       ))}
+
+      <Settlement session={session} />
 
       {session.rounds.length > 0 && (
         <>

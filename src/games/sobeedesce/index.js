@@ -157,6 +157,28 @@ const sobeedesce = {
     });
   },
 
+  // Saldos em euros para o acerto de contas (+ recebe, − paga).
+  // Só faz sentido com o jogo terminado: cada perdedor paga os pontos que lhe
+  // sobraram; o vencedor recebe a soma. Quem chegou a 0 sem ganhar não paga.
+  getSettlement(state) {
+    if (!state.finished) return [];
+    const v = state.valuePerPoint;
+    const pot = state.scores
+      .filter((p) => p.playerId !== state.winnerId && p.pts > 0)
+      .reduce((sum, p) => sum + p.pts * v, 0);
+
+    return state.scores.map((p) => {
+      if (p.playerId === state.winnerId) {
+        return { playerId: p.playerId, name: p.name, amount: pot };
+      }
+      return {
+        playerId: p.playerId,
+        name: p.name,
+        amount: p.pts > 0 ? -(p.pts * v) : 0,
+      };
+    });
+  },
+
   roundSummary(round, index, playersList) {
     const chooser = playersList.find((p) => p.id === round.chooserId);
     const suit = SUITS.find((s) => s.k === round.suit);

@@ -395,6 +395,47 @@ body {
   margin: 0;
 }
 
+/* Acerto de contas */
+.settle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.settle-from {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--neg);
+}
+.settle-arrow {
+  color: var(--textDim);
+  line-height: 0;
+  flex-shrink: 0;
+}
+.settle-to {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pos);
+  flex: 1;
+}
+.settle-amt {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold);
+}
+.settle-none {
+  background: var(--surfaceAlt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  color: var(--textDim);
+  font-size: 14.5px;
+}
+
 /* Estatísticas / listas (Perfil) */
 .stat-grid {
   display: grid;
