@@ -269,6 +269,37 @@ alter publication supabase_realtime add table public.live_comments;
 > que faz sentido para "acompanhar o jogo". Alterar o resultado é que fica
 > reservado ao dono e aos jogadores convidados.
 
+## 2f. TERCEIRO bloco de SQL — sugestões dos utilizadores (opcional)
+
+O botão **"O teu jogo não está aqui?"** já funciona: se esta tabela não existir,
+oferece mandar por email para ti. Com a tabela, as sugestões ficam guardadas e
+podes vê-las todas de uma vez no painel do Supabase (**Table Editor → feedback**),
+o que é bem mais prático quando começarem a chegar muitas.
+
+**SQL Editor → New query → colar → Run:**
+
+```sql
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users on delete set null,
+  author_name text,
+  kind text not null check (kind in ('jogo','ideia','problema')),
+  game_name text,
+  body text not null check (char_length(body) between 1 and 2000),
+  created_at timestamptz default now()
+);
+
+alter table public.feedback enable row level security;
+
+-- Qualquer pessoa pode enviar (mesmo sem conta), mas ninguém pode ler o que os
+-- outros escreveram — as sugestões só se veem no painel do Supabase.
+create policy "enviar sugestao" on public.feedback
+  for insert with check (true);
+```
+
+> Não criei política de leitura de propósito: assim as sugestões não ficam
+> expostas na app a quem tiver o link. Tu lês no painel do Supabase.
+
 ## 2d. Botão de pagar (MB WAY) — o que é possível, honestamente
 
 Pedido dos jogadores: um botão para pagar no fim do jogo. O que dá e o que não dá:

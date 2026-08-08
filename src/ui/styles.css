@@ -395,6 +395,58 @@ body {
   margin: 0;
 }
 
+/* Botão de sugerir jogo */
+.suggestbtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px dashed var(--goldDim);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+}
+.suggestbtn-t {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.suggestbtn-s {
+  display: block;
+  color: var(--textDim);
+  font-size: 13px;
+  margin-top: 3px;
+}
+.feedbacktext {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* King — escolha de contrato */
+.chip.kingchip {
+  justify-content: space-between;
+  text-align: left;
+}
+.kingval {
+  color: var(--textDim);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.kingpts {
+  color: var(--textDim);
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
 /* Painel "quem pode marcar" */
 .invitepanel {
   background: var(--surfaceAlt);

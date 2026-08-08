@@ -325,6 +325,7 @@ export default function App() {
         favorites={favorites}
         onToggleFav={toggleFav}
         history={history}
+        user={user}
       />
     );
   }

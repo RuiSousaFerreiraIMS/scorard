@@ -2,7 +2,9 @@
 // recentes/favoritos (estilo Netflix) e grelha de todos os jogos. Tocar num
 // jogo abre o detalhe.
 
+import { useState } from 'react';
 import { listGames, getGame } from '../core/gameRegistry';
+import FeedbackPanel from '../ui/FeedbackPanel.jsx';
 import { deriveState } from '../core/session';
 import { recentGameIds } from '../core/favorites';
 import { Icon } from '../ui/icons.jsx';
@@ -15,8 +17,10 @@ export default function HomeScreen({
   favorites,
   onToggleFav,
   history,
+  user,
 }) {
   const games = listGames();
+  const [showFeedback, setShowFeedback] = useState(false);
 
   let resumeInfo = null;
   if (activeSession) {
@@ -112,7 +116,15 @@ export default function HomeScreen({
         })}
       </div>
 
-      <p className="footer">Mais jogos em breve.</p>
+      <div className="mt-lg" />
+      {showFeedback ? (
+        <FeedbackPanel user={user} onClose={() => setShowFeedback(false)} />
+      ) : (
+        <button type="button" className="suggestbtn" onClick={() => setShowFeedback(true)}>
+          <span className="suggestbtn-t">O teu jogo não está aqui?</span>
+          <span className="suggestbtn-s">Diz-nos qual é — a lista cresce com o pessoal.</span>
+        </button>
+      )}
     </>
   );
 }
