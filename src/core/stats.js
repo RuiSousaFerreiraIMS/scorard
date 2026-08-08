@@ -10,13 +10,26 @@
 import { getGame } from './gameRegistry';
 import { deriveState } from './session';
 
+// "Rui", " rui " e "RUI" são a mesma pessoa. Sem isto, o mesmo jogador aparecia
+// várias vezes no ranking só por causa de maiúsculas ou espaços a mais.
+export function normalizeName(name) {
+  return String(name || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('pt');
+}
+
 export function computeStats(history) {
   const byGameCount = new Map();
-  const players = new Map(); // nome -> { name, games, wins, money }
+  const players = new Map(); // chave normalizada -> { name, games, wins, money }
 
-  const bump = (name) => {
-    if (!players.has(name)) players.set(name, { name, games: 0, wins: 0, money: 0 });
-    return players.get(name);
+  // Guarda a forma como o nome foi escrito da primeira vez (é a que se mostra).
+  const bump = (rawName) => {
+    const key = normalizeName(rawName);
+    if (!players.has(key)) {
+      players.set(key, { name: String(rawName).trim(), games: 0, wins: 0, money: 0 });
+    }
+    return players.get(key);
   };
 
   let totalGames = 0;

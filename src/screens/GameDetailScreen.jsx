@@ -3,6 +3,7 @@
 
 import { getGame } from '../core/gameRegistry';
 import { Icon } from '../ui/icons.jsx';
+import { playersLabel } from '../ui/components.jsx';
 
 export default function GameDetailScreen({ gameId, isFav, onToggleFav, onStart, onRules, onBack }) {
   const game = getGame(gameId);
@@ -32,7 +33,7 @@ export default function GameDetailScreen({ gameId, isFav, onToggleFav, onStart, 
         <h1 style={{ margin: '10px 0 2px' }}>{game.name}</h1>
         <div className="detail-meta">
           <span className="chip-meta">
-            <Icon name="amigos" size={15} /> {game.minPlayers}–{game.maxPlayers} jogadores
+            <Icon name="amigos" size={15} /> {playersLabel(game)}
           </span>
           <span className="chip-meta">{game.difficulty}</span>
         </div>

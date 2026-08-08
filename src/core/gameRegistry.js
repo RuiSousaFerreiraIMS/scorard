@@ -13,8 +13,9 @@
 
 import fodinha from '../games/fodinha/index.js';
 import sobeedesce from '../games/sobeedesce/index.js';
+import sueca from '../games/sueca/index.js';
 
-const GAMES = [fodinha, sobeedesce];
+const GAMES = [fodinha, sobeedesce, sueca];
 
 export function listGames() {
   return GAMES.map((g) => ({

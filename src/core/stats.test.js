@@ -57,6 +57,27 @@ describe('computeStats', () => {
     expect(s.players[0].name).toBe('Ana');
   });
 
+  it('junta o mesmo jogador escrito de maneiras diferentes', () => {
+    // a mesma pessoa: "Ana", " ana " e "ANA"
+    const variantes = [
+      mkSession('v1', [{ loserIds: ['b'] }], '2026-08-01T20:00:00.000Z'),
+      {
+        ...mkSession('v2', [{ loserIds: ['b'] }], '2026-08-02T20:00:00.000Z'),
+        players: [
+          { id: 'a', name: ' ana ' },
+          { id: 'b', name: 'Bea' },
+          { id: 'c', name: 'Caz' },
+          { id: 'd', name: 'Dux' },
+        ],
+      },
+    ];
+    const s = computeStats(variantes);
+    const anas = s.players.filter((p) => p.name.toLowerCase().trim() === 'ana');
+    expect(anas).toHaveLength(1);
+    expect(anas[0].games).toBe(2);
+    expect(anas[0].name).toBe('Ana'); // mostra como foi escrito da 1ª vez
+  });
+
   it('histórico vazio devolve estatísticas vazias, sem rebentar', () => {
     const s = computeStats([]);
     expect(s.totalGames).toBe(0);

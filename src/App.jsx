@@ -14,6 +14,7 @@ import WelcomeScreen from './screens/WelcomeScreen.jsx';
 import LiveView from './screens/LiveView.jsx';
 import { readLiveHash, createLive, liveUrl, pushRounds, invitePlayer } from './core/live';
 import { loadFriends } from './core/friends';
+import { normalizeName } from './core/stats';
 import { getGame } from './core/gameRegistry';
 import { readShareHash } from './core/shareLink';
 import { loadFavorites, toggleFavorite, saveFavorites } from './core/favorites';
@@ -183,10 +184,11 @@ export default function App() {
     // (O nome do jogador tem de bater certo com o nome do amigo.)
     const data = await loadFriends(user.id);
     if (data) {
-      const names = new Set(session.players.map((p) => p.name));
+      // comparação tolerante: "Rui", " rui " e "RUI" são a mesma pessoa
+      const names = new Set(session.players.map((p) => normalizeName(p.name)));
       await Promise.all(
         data.friends
-          .filter((f) => names.has(f.display_name))
+          .filter((f) => names.has(normalizeName(f.display_name)))
           .map((f) => invitePlayer(live.id, f.id)),
       );
     }

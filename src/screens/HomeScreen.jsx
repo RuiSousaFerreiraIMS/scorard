@@ -6,6 +6,7 @@ import { listGames, getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
 import { recentGameIds } from '../core/favorites';
 import { Icon } from '../ui/icons.jsx';
+import { playersLabel } from '../ui/components.jsx';
 
 export default function HomeScreen({
   onOpenDetail,
@@ -104,7 +105,7 @@ export default function HomeScreen({
               <span className={`game-suit ${g.suit === '♥' ? 'copas' : ''}`}>{g.suit}</span>
               <div className="game-name">{g.name}</div>
               <div className="game-metaline">
-                {g.minPlayers}–{g.maxPlayers} jogadores · {g.difficulty}
+                {playersLabel(g)} · {g.difficulty}
               </div>
             </div>
           );

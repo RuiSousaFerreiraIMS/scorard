@@ -36,6 +36,12 @@ export function BackButton({ onClick, label = 'Voltar' }) {
   );
 }
 
+// "4 jogadores" quando é número fixo; "2–20 jogadores" quando há intervalo.
+export function playersLabel(game) {
+  const { minPlayers: min, maxPlayers: max } = game;
+  return min === max ? `${min} jogadores` : `${min}–${max} jogadores`;
+}
+
 // Cor do valor de dinheiro conforme sinal.
 export function moneyClass(score) {
   return score > 0 ? 'pos' : score < 0 ? 'neg' : 'dim';
