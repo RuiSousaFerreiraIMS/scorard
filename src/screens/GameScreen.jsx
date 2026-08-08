@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { getGame } from '../core/gameRegistry';
 import { deriveState } from '../core/session';
 import { Eyebrow, Button, BackButton } from '../ui/components.jsx';
+import LiveInvitePanel from '../ui/LiveInvitePanel.jsx';
 
 // Moldura genérica de jogo. O miolo do input é do jogo (game.RoundInput);
 // tudo o resto — desfazer, histórico da sessão, terminar — é comum.
@@ -13,7 +15,9 @@ export default function GameScreen({
   onShareLive,
   onGoLive,
   onShareLiveUrl,
+  user,
 }) {
+  const [showInvite, setShowInvite] = useState(false);
   const game = getGame(session.gameId);
   const state = deriveState(session, game);
   const RoundInput = game.RoundInput;
@@ -56,10 +60,24 @@ export default function GameScreen({
       </div>
 
       {session.liveId ? (
-        <button type="button" className="btn btn-ghost" onClick={onShareLiveUrl}>
-          <span className="livedot" style={{ display: 'inline-block', marginRight: 8 }} />
-          Ao vivo — partilhar link outra vez
-        </button>
+        <>
+          <button type="button" className="btn btn-ghost" onClick={onShareLiveUrl}>
+            <span className="livedot" style={{ display: 'inline-block', marginRight: 8 }} />
+            Ao vivo — partilhar link outra vez
+          </button>
+          {user && (
+            <button type="button" className="btn btn-ghost" onClick={() => setShowInvite((v) => !v)}>
+              👥 Quem pode marcar
+            </button>
+          )}
+          {showInvite && user && (
+            <LiveInvitePanel
+              sessionId={session.liveId}
+              user={user}
+              onClose={() => setShowInvite(false)}
+            />
+          )}
+        </>
       ) : (
         onGoLive && (
           <button type="button" className="btn btn-ghost" onClick={onGoLive}>

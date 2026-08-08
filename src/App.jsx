@@ -291,6 +291,7 @@ export default function App() {
         onShareLive={() => shareSessionLink(session)}
         onGoLive={user ? goLive : null}
         onShareLiveUrl={() => shareUrl(liveUrl(session.liveId))}
+        user={user}
       />
     );
   } else if (flow === 'results' && session) {

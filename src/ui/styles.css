@@ -395,6 +395,21 @@ body {
   margin: 0;
 }
 
+/* Painel "quem pode marcar" */
+.invitepanel {
+  background: var(--surfaceAlt);
+  border: 1px solid var(--goldDim);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  margin-top: 10px;
+}
+.invitehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
 /* Setup — jogadores escolhidos e lista de conhecidos */
 .pchosen {
   flex: 1;

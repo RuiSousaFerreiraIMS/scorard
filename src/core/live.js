@@ -77,6 +77,17 @@ export async function invitePlayer(sessionId, userId) {
   return !error;
 }
 
+// Tirar a alguém a permissão de marcar (só o dono é que consegue).
+export async function removePlayer(sessionId, userId) {
+  if (!supabase) return false;
+  const { error } = await supabase
+    .from('live_players')
+    .delete()
+    .eq('session_id', sessionId)
+    .eq('user_id', userId);
+  return !error;
+}
+
 export async function fetchPlayers(sessionId) {
   if (!supabase) return [];
   const { data, error } = await supabase
