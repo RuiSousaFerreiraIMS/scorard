@@ -395,6 +395,43 @@ body {
   margin: 0;
 }
 
+/* Setup — jogadores escolhidos e lista de conhecidos */
+.pchosen {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pchosen-tag {
+  background: var(--surfaceAlt);
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.rosterwrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.friendchip.hasaccount {
+  border-color: var(--goldDim);
+}
+.addrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Sueca — contador de pontos da mão */
 .pointsbox {
   display: flex;

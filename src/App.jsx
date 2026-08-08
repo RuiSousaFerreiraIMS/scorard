@@ -182,16 +182,22 @@ export default function App() {
 
     // Amigos que estão a jogar podem marcar o resultado, não só assistir.
     // (O nome do jogador tem de bater certo com o nome do amigo.)
-    const data = await loadFriends(user.id);
-    if (data) {
-      // comparação tolerante: "Rui", " rui " e "RUI" são a mesma pessoa
-      const names = new Set(session.players.map((p) => normalizeName(p.name)));
-      await Promise.all(
-        data.friends
-          .filter((f) => names.has(normalizeName(f.display_name)))
-          .map((f) => invitePlayer(live.id, f.id)),
-      );
+    // Quem foi escolhido da lista já traz o id da conta — convida-se por id,
+    // que é fiável. Para jogos antigos (sem id guardado), tenta-se pelo nome.
+    const byId = session.players.map((p) => p.userId).filter(Boolean);
+    let toInvite = new Set(byId);
+
+    if (toInvite.size < session.players.length) {
+      const data = await loadFriends(user.id);
+      if (data) {
+        const names = new Set(session.players.map((p) => normalizeName(p.name)));
+        for (const f of data.friends) {
+          if (names.has(normalizeName(f.display_name))) toInvite.add(f.id);
+        }
+      }
     }
+    toInvite.delete(user.id); // o dono já pode marcar
+    await Promise.all([...toInvite].map((uid) => invitePlayer(live.id, uid)));
 
     const url = liveUrl(live.id);
     const text = 'Acompanha o nosso jogo ao vivo na Scorard 📡';
@@ -271,6 +277,7 @@ export default function App() {
         onStart={startGame}
         onBack={goHome}
         user={user}
+        history={history}
       />
     );
   } else if (flow === 'game' && session) {

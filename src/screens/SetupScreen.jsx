@@ -1,14 +1,30 @@
-import { useState, useEffect } from 'react';
+// Setup do jogo: escolher quem joga (da lista de conhecidos, ou escrevendo um
+// nome novo) e as opções da partida.
+//
+// A lista poupa escrita à mesa e mantém os nomes consistentes — é o mesmo nome
+// de sempre, não uma variação. Quem tem conta Scorard entra com o `userId`, e é
+// por isso que depois pode ajudar a marcar numa sessão ao vivo.
+
+import { useState, useEffect, useMemo } from 'react';
 import { getGame } from '../core/gameRegistry';
 import { loadFriends } from '../core/friends';
-import { Eyebrow, Card, Button, BackButton } from '../ui/components.jsx';
+import { buildRoster } from '../core/roster';
+import { normalizeName } from '../core/stats';
+import { Eyebrow, Card, Button, BackButton, playersLabel } from '../ui/components.jsx';
+import { Icon } from '../ui/icons.jsx';
 
 let idCounter = 0;
-const newPlayer = (name = '') => ({ id: `p${Date.now()}_${idCounter++}`, name });
+const newPlayer = (name = '', userId = null) => ({
+  id: `p${Date.now()}_${idCounter++}`,
+  name,
+  ...(userId ? { userId } : {}),
+});
 
-export default function SetupScreen({ gameId, initialPlayers, onStart, onBack, user }) {
+export default function SetupScreen({ gameId, initialPlayers, onStart, onBack, user, history = [] }) {
   const game = getGame(gameId);
   const [friends, setFriends] = useState([]);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -17,10 +33,9 @@ export default function SetupScreen({ gameId, initialPlayers, onStart, onBack, u
 
   const [players, setPlayers] = useState(() => {
     if (initialPlayers && initialPlayers.length >= game.minPlayers) {
-      return initialPlayers.map((p) => newPlayer(p.name));
+      return initialPlayers.map((p) => newPlayer(p.name, p.userId));
     }
-    const count = Math.max(game.minPlayers, 2);
-    return Array.from({ length: count }, () => newPlayer(''));
+    return [];
   });
 
   const [setup, setSetup] = useState(() => {
@@ -31,24 +46,40 @@ export default function SetupScreen({ gameId, initialPlayers, onStart, onBack, u
     return init;
   });
 
-  const updatePlayer = (id, name) =>
-    setPlayers((ps) => ps.map((p) => (p.id === id ? { ...p, name } : p)));
-  const addPlayer = () => {
-    if (players.length < game.maxPlayers) setPlayers((ps) => [...ps, newPlayer('')]);
-  };
-  const removePlayer = (id) => {
-    if (players.length > game.minPlayers) setPlayers((ps) => ps.filter((p) => p.id !== id));
+  const roster = useMemo(() => buildRoster(history, friends), [history, friends]);
+  const chosen = new Set(players.map((p) => normalizeName(p.name)));
+  const available = roster.filter((r) => !chosen.has(r.key));
+
+  const full = players.length >= game.maxPlayers;
+  const canStart = players.length >= game.minPlayers && players.every((p) => p.name.trim());
+
+  const addFromRoster = (r) => {
+    if (full) return;
+    setPlayers((ps) => [...ps, newPlayer(r.name, r.userId)]);
   };
 
-  const canStart = players.length >= game.minPlayers;
+  const addTyped = () => {
+    const name = newName.trim();
+    if (!name || full) return;
+    if (chosen.has(normalizeName(name))) {
+      setNewName('');
+      return; // já está no jogo
+    }
+    // se o nome já existe na lista, aproveita o userId dessa pessoa
+    const known = roster.find((r) => r.key === normalizeName(name));
+    setPlayers((ps) => [...ps, newPlayer(known ? known.name : name, known?.userId)]);
+    setNewName('');
+    setAdding(false);
+  };
+
+  const removePlayer = (id) => setPlayers((ps) => ps.filter((p) => p.id !== id));
 
   const start = () => {
-    const named = players.map((p, i) => ({ ...p, name: p.name.trim() || `Jogador ${i + 1}` }));
     const parsed = {};
     game.setupFields.forEach((f) => {
       parsed[f.key] = f.type === 'number' ? Number(setup[f.key]) : setup[f.key];
     });
-    onStart(named, parsed);
+    onStart(players, parsed);
   };
 
   return (
@@ -56,61 +87,82 @@ export default function SetupScreen({ gameId, initialPlayers, onStart, onBack, u
       <BackButton onClick={onBack} />
       <Eyebrow>Configurar</Eyebrow>
       <h1 style={{ margin: '4px 0 2px' }}>{game.name}</h1>
-      <p className="sub">Quem joga e as opções da partida.</p>
+      <p className="sub">
+        {playersLabel(game)} · escolhe quem joga
+      </p>
 
-      <div className="mt" />
-      <Eyebrow style={{ marginBottom: 10 }}>Jogadores ({players.length})</Eyebrow>
+      <Eyebrow style={{ marginBottom: 10 }}>
+        A jogar ({players.length}
+        {game.minPlayers === game.maxPlayers ? `/${game.maxPlayers}` : ''})
+      </Eyebrow>
+
+      {players.length === 0 && (
+        <div className="settle-none" style={{ marginBottom: 10 }}>
+          Ainda ninguém. Escolhe da lista abaixo ou adiciona um jogador novo.
+        </div>
+      )}
+
       {players.map((p, i) => (
         <div key={p.id} className="prow">
           <div className="pnum">{i + 1}</div>
-          <input
-            className="pinput"
-            value={p.name}
-            onChange={(e) => updatePlayer(p.id, e.target.value)}
-            placeholder={`Jogador ${i + 1}`}
-          />
-          {players.length > game.minPlayers && (
-            <button type="button" className="premove" onClick={() => removePlayer(p.id)}>
-              ×
-            </button>
-          )}
+          <div className="pchosen">
+            {p.name}
+            {p.userId && (
+              <span className="pchosen-tag" title="Tem conta Scorard — pode ajudar a marcar">
+                conta
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            className="premove"
+            onClick={() => removePlayer(p.id)}
+            aria-label={`Tirar ${p.name}`}
+          >
+            ×
+          </button>
         </div>
       ))}
-      {players.length < game.maxPlayers && (
-        <button type="button" className="addrow" onClick={addPlayer}>
-          + Adicionar jogador
-        </button>
-      )}
 
-      {friends.length > 0 && players.length < game.maxPlayers && (
+      {!full && (
         <>
-          <Eyebrow style={{ marginTop: 14, marginBottom: 8 }}>Juntar amigos</Eyebrow>
-          <div className="rail" style={{ marginBottom: 4 }}>
-            {friends
-              .filter((f) => !players.some((p) => p.name === f.display_name))
-              .map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  className="friendchip"
-                  onClick={() => {
-                    // ocupa um lugar vazio, ou cria um novo
-                    setPlayers((ps) => {
-                      const empty = ps.findIndex((p) => !p.name.trim());
-                      if (empty >= 0) {
-                        const next = [...ps];
-                        next[empty] = { ...next[empty], name: f.display_name };
-                        return next;
-                      }
-                      if (ps.length >= game.maxPlayers) return ps;
-                      return [...ps, newPlayer(f.display_name)];
-                    });
-                  }}
-                >
-                  + {f.display_name}
-                </button>
-              ))}
-          </div>
+          {available.length > 0 && (
+            <>
+              <Eyebrow style={{ marginTop: 16, marginBottom: 8 }}>Jogadores</Eyebrow>
+              <div className="rosterwrap">
+                {available.map((r) => (
+                  <button
+                    key={r.key}
+                    type="button"
+                    className={`friendchip ${r.userId ? 'hasaccount' : ''}`}
+                    onClick={() => addFromRoster(r)}
+                  >
+                    + {r.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {adding ? (
+            <div className="prow" style={{ marginTop: 10 }}>
+              <input
+                className="pinput"
+                autoFocus
+                placeholder="Nome do jogador"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addTyped()}
+              />
+              <button type="button" className="friendbtn" onClick={addTyped}>
+                Juntar
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="addrow" onClick={() => setAdding(true)}>
+              <Icon name="plus" size={15} /> Adicionar jogador novo
+            </button>
+          )}
         </>
       )}
 
@@ -134,7 +186,9 @@ export default function SetupScreen({ gameId, initialPlayers, onStart, onBack, u
 
       <div className="mt-xl" />
       <Button onClick={start} disabled={!canStart}>
-        Começar jogo
+        {canStart
+          ? 'Começar jogo'
+          : `Faltam ${game.minPlayers - players.length} jogador${game.minPlayers - players.length > 1 ? 'es' : ''}`}
       </Button>
     </>
   );
